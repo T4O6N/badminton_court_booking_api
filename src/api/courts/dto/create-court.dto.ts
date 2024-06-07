@@ -22,9 +22,9 @@ export class CourtDto {
 
     @ApiProperty({
         required: true,
-        type: String,
+        type: Number,
     })
-    public court_price: string;
+    public court_price: number;
 
     @ApiProperty({
         required: true,
@@ -55,4 +55,14 @@ export class CourtDto {
         type: Boolean,
     })
     public available: boolean;
+
+    @ApiProperty({
+        type: String,
+    })
+    public created_by: string;
+
+    @ApiProperty({
+        type: String,
+    })
+    public updated_by: string;
 }

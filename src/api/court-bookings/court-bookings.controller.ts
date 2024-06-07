@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { CourtBookingDto } from './dto/create-court-booking.dto';
 import { UpdateCourtBookingDto } from './dto/update-court-booking.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -14,8 +14,8 @@ export class CourtBookingController {
         summary: 'find all court booking',
     })
     @Get('FindMany')
-    async findAllCourtBooking(@Query('page') page?: number, @Query('limit') limit?: number) {
-        return await this.courtBookingService.findAllCourtBooking(page ? page : 1, limit ? limit : 100);
+    async findAllCourtBooking() {
+        return await this.courtBookingService.findAllCourtBooking();
     }
 
     @HttpCode(HttpStatus.OK)
@@ -24,7 +24,7 @@ export class CourtBookingController {
     })
     @Get('ById/:id')
     async findOneCourtBooking(@Param('id') courtBookingId: string) {
-        return await this.courtBookingService.findOneCourtBooking(courtBookingId);
+        return await this.courtBookingService.findCourtBookingById(courtBookingId);
     }
 
     @HttpCode(HttpStatus.OK)

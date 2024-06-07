@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { CourtsService } from './courts.service';
 import { UpdateCourtDto } from './dto/update-court.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
-import { CourtDto } from './dto/create-court.dto';
+import { ApiTags, ApiOperation, ApiConsumes } from '@nestjs/swagger';
+// import { CourtDto } from './dto/create-court.dto';
 
 @ApiTags('Courts')
 @Controller('courts')
@@ -14,8 +14,8 @@ export class CourtsController {
     @ApiOperation({
         summary: 'find all courts',
     })
-    async findAllCourt(@Query('page') page?: number, @Query('limit') limit?: number): Promise<object> {
-        return await this.courtsService.findAllCourt(page ? page : 1, limit ? limit : 10);
+    async findAllCourt(): Promise<object> {
+        return await this.courtsService.findAllCourt();
     }
 
     @HttpCode(HttpStatus.OK)
@@ -24,36 +24,42 @@ export class CourtsController {
         summary: 'find court by id',
     })
     async getCourtById(@Param('id') courtId: string): Promise<object> {
-        return this.courtsService.getCourtById(courtId);
+        return await this.courtsService.getCourtById(courtId);
     }
 
     @HttpCode(HttpStatus.OK)
     @Get('ByCourtNumber/:CourtNum')
     async getCourtByNumber(@Param('CourtNum') courtNumber: string): Promise<object> {
-        return this.courtsService.getCourtByNumber(courtNumber);
+        return await this.courtsService.getCourtByNumber(courtNumber);
     }
+
+    // @HttpCode(HttpStatus.OK)
+    // @Get('ByCourtTime/:CourtTime')
+    // async getCourtByTime(courtTime: string): Promise<object> {
+    //     return await this.courtsService.getCourtByTime(courtTime);
+    // }
 
     @HttpCode(HttpStatus.OK)
     @Post()
-    // @ApiConsumes('multipart/form-data')
+    @ApiConsumes('multipart/form-data')
     @ApiOperation({
         summary: 'create new court',
     })
-    async createNewCourt(
-        @Body()
-        courtData: CourtDto,
-    ): Promise<object> {
-        return this.courtsService.createNewCourt(courtData);
-    }
+    // async createNewCourt(
+    //     @Body()
+    //     courtData: CourtDto,
+    // ): Promise<object> {
+    //     return await this.courtsService.createNewCourt(courtData);
+    // }
 
     @HttpCode(HttpStatus.OK)
     @Patch(':id')
-    // @ApiConsumes('multipart/form-data')
+    @ApiConsumes('multipart/form-data')
     @ApiOperation({
         summary: 'update court',
     })
     async updateCourt(@Param('id') courtId: string, @Body() courtData: UpdateCourtDto): Promise<object> {
-        return this.courtsService.updateCourt(courtId, courtData);
+        return await this.courtsService.updateCourt(courtId, courtData);
     }
 
     @HttpCode(HttpStatus.OK)
@@ -62,6 +68,6 @@ export class CourtsController {
         summary: 'delete court',
     })
     async deleteCourt(@Param('id') courtId: string): Promise<object> {
-        return this.courtsService.deleteCourt(courtId);
+        return await this.courtsService.deleteCourt(courtId);
     }
 }

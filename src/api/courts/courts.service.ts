@@ -1,22 +1,19 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
-import { CourtDto } from './dto/create-court.dto';
+// import { CourtDto } from './dto/create-court.dto';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { validateMongodbID } from 'src/utils/id.utill';
-import { isEmpty } from 'src/utils/util';
+// import { isEmpty } from 'src/utils/util';
 import { courtNum } from '@prisma/client';
+// import { CourtDto } from './dto/create-court.dto';
 
 @Injectable()
 export class CourtsService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async findAllCourt(skip: number, take: number) {
-        const page = parseInt(String(skip));
-        const limit = parseInt(String(take));
+    async findAllCourt() {
         const findCourts = await this.prisma.court.findMany({
-            skip: (page - 1) * limit,
-            take: limit,
-            orderBy: { create_at: 'desc' },
+            orderBy: { created_at: 'desc' },
         });
         return findCourts;
     }
@@ -49,19 +46,34 @@ export class CourtsService {
         return findCourt;
     }
 
-    async createNewCourt(courtData: CourtDto): Promise<object> {
-        if (isEmpty(courtData)) {
-            throw new BadRequestException('Court data is empty');
-        }
+    // async getCourtByTime(courtTime: string): Promise<object> {
+    //     const findCourtByTime = await this.prisma.court.findFirst({
+    //         where: {
+    //             start_time: {
+    //                 equals: courtTime,
+    //             },
+    //             end_time: {
+    //                 equals: courtTime,
+    //             },
+    //         },
+    //     });
 
-        const createCourtData = await this.prisma.court.create({
-            data: {
-                ...courtData,
-                is_active: true,
-            },
-        });
-        return createCourtData;
-    }
+    //     return findCourtByTime;
+    // }
+
+    // async createNewCourt(courtData: CourtDto): Promise<object> {
+    //     if (isEmpty(courtData)) {
+    //         throw new BadRequestException('Court data is empty');
+    //     }
+
+    //     const createCourtData = await this.prisma.court.create({
+    //         data: {
+    //             ...courtData,
+    //             // is_active: true,
+    //         },
+    //     });
+    //     return createCourtData;
+    // }
 
     async updateCourt(courtId: string, courtData: UpdateCourtDto): Promise<object> {
         const findCourt = await this.prisma.court.findFirst({
@@ -80,7 +92,7 @@ export class CourtsService {
             },
             data: {
                 ...courtData,
-                is_update_info: true,
+                // is_update_info: true,
             },
         });
 

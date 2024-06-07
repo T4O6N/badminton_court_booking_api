@@ -1,38 +1,44 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { CourtDto } from 'src/api/courts/dto/create-court.dto';
 
 export class CourtBookingDto {
-  @ApiProperty({
-    type: String,
-  })
-  public phone: string;
+    @ApiProperty({
+        required: true,
+        type: String,
+    })
+    public phone: string;
 
-  @ApiProperty({
-    type: Boolean,
-  })
-  public is_block: boolean;
+    @ApiProperty({
+        required: true,
+        type: String,
+    })
+    public first_name: string;
 
-  @ApiProperty({
-    type: Boolean,
-  })
-  public is_active: boolean;
+    @ApiProperty({
+        required: true,
+        type: String,
+    })
+    public last_name: string;
 
-  @ApiProperty({
-    type: String,
-  })
-  public first_name: string;
+    @ApiProperty({
+        required: true,
+        type: String,
+    })
+    public email: string;
 
-  @ApiProperty({
-    type: String,
-  })
-  public last_name: string;
+    @ApiProperty({
+        type: [CourtDto],
+        example: '',
+    })
+    public court: CourtDto[];
 
-  @ApiProperty({
-    type: String,
-  })
-  public email: string;
+    @ApiProperty({
+        type: Number,
+    })
+    public limitDay: number;
 
-  @ApiProperty({
-    type: String,
-  })
-  public courtId: string;
+    @ApiProperty({
+        type: String,
+    })
+    public booked_by: string;
 }
