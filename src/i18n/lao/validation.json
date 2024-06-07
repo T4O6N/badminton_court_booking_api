@@ -1,0 +1,8 @@
+{
+    "USERNAME_REQUIRED": "ກະລຸນາປ້ອນຊື່ຜູ້ໃຊ້",
+    "PASSWORD_REQUIRED": "ກະລຸນາປ້ອນລະຫັດຜ່ານ",
+    "EMAIL_REQUIRED": "ກະລຸນາປ້ອນອີເມວ",
+    "EMAIL_NOT_MATCH": "ອີເມວບໍ່ຖືກຕ້ອງ",
+    "IS_NOT_PHONE_OR_REF":"${phoneOrRef} ບໍ່ແມ່ນເບີ ຫຼື ເລກອ້າງອີງ",
+    "IS_NOT_NUMBER":"${phoneOrRef} ບໍ່ແມ່ນໂຕເລກ"
+}
