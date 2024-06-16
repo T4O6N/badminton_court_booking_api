@@ -6,9 +6,7 @@ import { PrismaModule } from './config/prisma/prisma.module';
 import { WinstonLoggerService } from './config/loggers/logger.service';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { LanguageModule } from './config/lang/language.module';
-import { CourtsModule } from './api/courts/courts.module';
-import { CourtBookingModule } from './api/court-bookings/court-bookings.module';
-import { StaffModule } from './api/staff/staff.module';
+import { CourtBookingsModule } from './api/court-bookings/court-bookings.module';
 
 @Module({
     imports: [
@@ -33,9 +31,7 @@ import { StaffModule } from './api/staff/staff.module';
         }),
         PrismaModule,
         LanguageModule,
-        CourtsModule,
-        CourtBookingModule,
-        StaffModule,
+        CourtBookingsModule,
     ],
     controllers: [],
     providers: [WinstonLoggerService],

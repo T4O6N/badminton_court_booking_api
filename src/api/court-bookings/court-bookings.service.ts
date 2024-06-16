@@ -1,162 +1,118 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CourtBookingDto } from './dto/create-court-booking.dto';
-import { UpdateCourtBookingDto } from './dto/update-court-booking.dto';
 import { PrismaService } from 'src/config/prisma/prisma.service';
-import { courtBooking } from '@prisma/client';
+import { CourtBookingDto } from './dto/create-court-booking.dto';
+import { validateMongodbID } from 'src/utils/id.utill';
 
 @Injectable()
 export class CourtBookingsService {
     constructor(private readonly prisma: PrismaService) {}
 
-    // NOTE - this is find all booking court function
-    async findAllCourtBooking(): Promise<courtBooking[]> {
-        const findAllCourtBooking = await this.prisma.courtBooking.findMany({
+    // NOTE - this is get all court bookings
+    async getCourtBookings() {
+        return await this.prisma.courtBooking.findMany({
             orderBy: {
                 created_at: 'desc',
             },
+            include: {
+                court: true,
+            },
         });
-
-        return findAllCourtBooking;
     }
 
-    // NOTE - this is find one booking court function
-    async findCourtBookingById(courtBookingId: string): Promise<courtBooking> {
+    // NOTE - this is get all court bookings hsitory
+    async getCourtBookingHistory() {
+        return await this.prisma.courtBooking.findMany({
+            orderBy: {
+                created_at: 'desc',
+            },
+            include: {
+                court: true,
+            },
+        });
+    }
+
+    // NOTE - thsis is get court booking by id
+    async getCourtBookingById(courtBookingId: string) {
+        await validateMongodbID(courtBookingId);
+
         const findCourtBooking = await this.prisma.courtBooking.findFirst({
             where: {
                 id: courtBookingId,
             },
+            include: {
+                court: true,
+            },
         });
 
         if (!findCourtBooking) {
-            throw new BadRequestException('Court booking not found in database');
+            throw new BadRequestException('This Court booking ID not found in database');
         }
 
-        const findOneCourtBooking = await this.prisma.courtBooking.findFirst({
-            where: {
-                id: courtBookingId,
-            },
-            include: {
-                court: {
-                    select: {
-                        court_number: true,
-                        court_price: true,
-                        date_of_court: true,
-                        description: true,
-                        start_time: true,
-                        end_time: true,
-                        available: true,
-                    },
-                },
-            },
-        });
-
-        return findOneCourtBooking;
+        return findCourtBooking;
     }
 
-    // NOTE - this is booking court function
-    async createCourtBooking(courtBookingData: CourtBookingDto): Promise<courtBooking> {
-        const newCourtBookingData = await this.prisma.courtBooking.create({
+    // NOTE - this is create court booking
+    async createCourtBooking(courtBookingData: CourtBookingDto) {
+        const totalAmount = this.calculateTotalAmount(courtBookingData);
+
+        const createCourtBooking = await this.prisma.courtBooking.create({
             data: {
                 ...courtBookingData,
                 booked_by: courtBookingData.first_name,
+                total_amount: totalAmount,
                 court: {
-                    create: courtBookingData.court.map((courtDto) => ({
-                        court_number: courtDto.court_number,
-                        court_price: courtDto.court_price,
-                        date_of_court: courtDto.date_of_court,
-                        description: courtDto.description,
-                        start_time: courtDto.start_time,
-                        end_time: courtDto.end_time,
-                        available: courtDto.available,
+                    create: courtBookingData.court.map((court) => ({
+                        ...court,
                     })),
                 },
             },
             include: {
-                court: {
-                    select: {
-                        court_number: true,
-                        court_price: true,
-                        date_of_court: true,
-                        description: true,
-                        start_time: true,
-                        end_time: true,
-                        available: true,
-                    },
-                },
+                court: true,
             },
         });
 
-        return newCourtBookingData;
+        return createCourtBooking;
     }
 
-    // NOTE - this is update booking court function
-    async updateCourtBooking(courtBookingId: string, courtBookingData: UpdateCourtBookingDto): Promise<courtBooking> {
-        const findCourtBooking = await this.prisma.courtBooking.findFirst({
+    // NOTE - this is delete court booking
+    async deleteCourtBooking(courtBookingId: string) {
+        const courtBooking = await this.prisma.courtBooking.findFirst({
             where: {
                 id: courtBookingId,
-            },
-        });
-
-        if (!findCourtBooking) {
-            throw new BadRequestException('Court booking not found in database');
-        }
-
-        const updateCourtBooking = await this.prisma.courtBooking.update({
-            where: {
-                id: courtBookingId,
-            },
-            data: {
-                ...courtBookingData,
-                court: {
-                    create: courtBookingData.court
-                        ? courtBookingData.court.map((courtDto) => ({
-                              court_number: courtDto.court_number,
-                              court_price: courtDto.court_price,
-                              date_of_court: courtDto.date_of_court,
-                              description: courtDto.description,
-                              start_time: courtDto.start_time,
-                              end_time: courtDto.end_time,
-                              available: courtDto.available,
-                          }))
-                        : [],
-                },
             },
             include: {
-                court: {
-                    select: {
-                        court_number: true,
-                        court_price: true,
-                        date_of_court: true,
-                        description: true,
-                        start_time: true,
-                        end_time: true,
-                        available: true,
-                    },
-                },
+                court: true,
             },
         });
 
-        return updateCourtBooking;
-    }
-
-    // NOTE - this is delete booking court function
-    async deleteCourtBooking(courtBookingId: string): Promise<courtBooking> {
-        const findCourtBooking = await this.prisma.courtBooking.findFirst({
-            where: {
-                id: courtBookingId,
-            },
-        });
-
-        if (!findCourtBooking) {
-            throw new BadRequestException('Court booking not found in database');
+        if (!courtBooking) {
+            throw new BadRequestException(`This Court booking ID not found in database`);
         }
 
-        const deleteCourtBooking = await this.prisma.courtBooking.delete({
+        const courtId = courtBooking.court.map((court) => court.id);
+
+        if (courtId.length > 0) {
+            await this.prisma.court.deleteMany({
+                where: {
+                    id: { in: courtId },
+                },
+            });
+        }
+
+        const deleteResult = await this.prisma.courtBooking.delete({
             where: {
                 id: courtBookingId,
             },
         });
 
-        return deleteCourtBooking;
+        return deleteResult;
+    }
+
+    calculateTotalAmount(courtBookingData: CourtBookingDto): number {
+        let totalAmount = 0;
+        courtBookingData.court.forEach((court) => {
+            totalAmount += court.court_price;
+        });
+        return totalAmount;
     }
 }

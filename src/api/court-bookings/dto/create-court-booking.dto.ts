@@ -1,44 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { CourtDto } from 'src/api/courts/dto/create-court.dto';
+import { Court, PaymentStatus } from '@prisma/client';
 
 export class CourtBookingDto {
-    @ApiProperty({
-        required: true,
-        type: String,
-    })
     public phone: string;
-
-    @ApiProperty({
-        required: true,
-        type: String,
-    })
     public first_name: string;
-
-    @ApiProperty({
-        required: true,
-        type: String,
-    })
-    public last_name: string;
-
-    @ApiProperty({
-        required: true,
-        type: String,
-    })
-    public email: string;
-
-    @ApiProperty({
-        type: [CourtDto],
-        example: '',
-    })
-    public court: CourtDto[];
-
-    @ApiProperty({
-        type: Number,
-    })
-    public limitDay: number;
-
-    @ApiProperty({
-        type: String,
-    })
+    public payment_Status: PaymentStatus;
+    public book_duration: number;
     public booked_by: string;
+    public total_amount: number;
+    public court: Court[];
 }

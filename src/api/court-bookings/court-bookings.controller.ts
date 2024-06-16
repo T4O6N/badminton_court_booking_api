@@ -1,59 +1,40 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus } from '@nestjs/common';
-import { CourtBookingDto } from './dto/create-court-booking.dto';
-import { UpdateCourtBookingDto } from './dto/update-court-booking.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { CourtBookingsService } from './court-bookings.service';
+import { ApiTags } from '@nestjs/swagger';
+import { CourtBookingDto } from './dto/create-court-booking.dto';
 
-@ApiTags('Court Booking')
+@ApiTags('Court Bookings')
 @Controller('court-booking')
-export class CourtBookingController {
-    constructor(private readonly courtBookingService: CourtBookingsService) {}
+export class CourtBookingsController {
+    constructor(private readonly courtBookingsService: CourtBookingsService) {}
 
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({
-        summary: 'find all court booking',
-    })
+    // NOTE - this is Find all courtBooking
     @Get('FindMany')
-    async findAllCourtBooking() {
-        return await this.courtBookingService.findAllCourtBooking();
+    async findAll() {
+        return await this.courtBookingsService.getCourtBookings();
     }
 
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({
-        summary: 'find one court booking',
-    })
+    // NOTE - this is Find courtBooking History
+    @Get('History')
+    async getCourtBookingHistory() {
+        return await this.courtBookingsService.getCourtBookingHistory();
+    }
+
+    // NOTE - this is Find courtBooking By Id
     @Get('ById/:id')
-    async findOneCourtBooking(@Param('id') courtBookingId: string) {
-        return await this.courtBookingService.findCourtBookingById(courtBookingId);
+    async getCourtBookingById(@Param('id') courtBookingId: string) {
+        return await this.courtBookingsService.getCourtBookingById(courtBookingId);
     }
 
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({
-        summary: 'create court booking',
-    })
+    // NOTE - this is create courtBooking
     @Post()
-    async createCourtBooking(
-        @Body()
-        courtBookingData: CourtBookingDto,
-    ) {
-        return await this.courtBookingService.createCourtBooking(courtBookingData);
+    async createCourtBooking(@Body() createCourtBookingData: CourtBookingDto) {
+        return await this.courtBookingsService.createCourtBooking(createCourtBookingData);
     }
 
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({
-        summary: 'update court booking',
-    })
-    @Patch(':id')
-    async updateCourtBooking(@Param('id') courtBookingId: string, @Body() courtBookingData: UpdateCourtBookingDto) {
-        return this.courtBookingService.updateCourtBooking(courtBookingId, courtBookingData);
-    }
-
-    @HttpCode(HttpStatus.OK)
-    @ApiOperation({
-        summary: 'delete court booking',
-    })
-    @Delete('remove/:id')
+    // NOTE - this is delete courtBooking
+    @Delete(':id')
     async deleteCourtBooking(@Param('id') courtBookingId: string) {
-        return await this.courtBookingService.deleteCourtBooking(courtBookingId);
+        return await this.courtBookingsService.deleteCourtBooking(courtBookingId);
     }
 }
