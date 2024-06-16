@@ -53,7 +53,7 @@ model courtBooking {
   phone          String
   first_name     String
   payment_Status PaymentStatus @default(booked)
-  book_duration  Int
+  book_expired   Int
   booked_by      String
   total_amount   Int
   court          Court[]
