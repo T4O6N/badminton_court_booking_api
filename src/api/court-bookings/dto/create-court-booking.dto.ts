@@ -1,11 +1,29 @@
-import { Court, PaymentStatus } from '@prisma/client';
+import { PaymentStatus } from "@prisma/client";
 
-export class CourtBookingDto {
+export class CourtDTO {
+    public court_number: string;
+
+    public court_price: number;
+
+    public start_time: string;
+
+    public end_time: string;
+}
+
+export class CourtBookingDTO {
     public phone: string;
-    public first_name: string;
+
+    public full_name: string;
+
     public payment_Status: PaymentStatus;
-    public book_expired: number;
+
+    public expiredTime: Date;
+
     public booked_by: string;
+
     public total_amount: number;
-    public court: Court[];
+
+    public bookingTime: Date;
+
+    public court: CourtDTO[];
 }

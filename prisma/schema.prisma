@@ -32,34 +32,32 @@ enum PaymentStatus {
 }
 
 model Court {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  court_number     courtNum
-  court_price      Int
-  start_time       String
-  end_time         String
-  description      String
-  available        Boolean  @default(true)
-  court_Booking_id String?  @db.ObjectId
-  created_at       DateTime @default(now())
-  updated_at       DateTime @default(now())
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  court_number   String
+  court_price    Int
+  start_time     String
+  end_time       String
+  available      Boolean       @default(true)
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @default(now())
+  courtBooking   courtBooking? @relation(fields: [courtBookingId], references: [id])
+  courtBookingId String?       @db.ObjectId
 
-  courtBooking courtBooking? @relation(fields: [court_Booking_id], references: [id])
-
-  @@map("courtBookeds")
+  @@map("courts")
 }
 
 model courtBooking {
   id             String        @id @default(auto()) @map("_id") @db.ObjectId
   phone          String
-  first_name     String
+  full_name     String
   payment_Status PaymentStatus @default(booked)
-  book_expired   Int
+  expiredTime    DateTime?     @map("expired_time")
   booked_by      String
   total_amount   Int
-  court          Court[]
   bookingTime    DateTime      @default(now())
   created_at     DateTime      @default(now())
   updated_at     DateTime      @default(now())
+  court          Court[]
 
   @@map("bookings")
 }

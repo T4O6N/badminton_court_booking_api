@@ -1,7 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
-import { CourtBookingDto } from './dto/create-court-booking.dto';
-import { validateMongodbID } from 'src/utils/id.utill';
+import { CourtBookingDTO } from './dto/create-court-booking.dto';
+import { UpdateCourtDto } from '../courts/dto/update-court.dto';
+import { PaymentDTO } from './dto/payment.dto';
 
 @Injectable()
 export class CourtBookingsService {
@@ -9,7 +10,7 @@ export class CourtBookingsService {
 
     // NOTE - this is get all court bookings
     async getCourtBookings() {
-        return await this.prisma.courtBooking.findMany({
+        const findCourtBooking = await this.prisma.courtBooking.findMany({
             orderBy: {
                 created_at: 'desc',
             },
@@ -17,9 +18,11 @@ export class CourtBookingsService {
                 court: true,
             },
         });
+
+        return findCourtBooking;
     }
 
-    // NOTE - this is get all court bookings hsitory
+    // NOTE - this is get all court bookings history
     async getCourtBookingHistory() {
         return await this.prisma.courtBooking.findMany({
             orderBy: {
@@ -31,34 +34,28 @@ export class CourtBookingsService {
         });
     }
 
-    // NOTE - thsis is get court booking by id
+    // NOTE - this is get court booking by id
     async getCourtBookingById(courtBookingId: string) {
-        await validateMongodbID(courtBookingId);
-
-        const findCourtBooking = await this.prisma.courtBooking.findFirst({
+        const findCourtBookingById = await this.prisma.courtBooking.findFirst({
             where: {
                 id: courtBookingId,
             },
-            include: {
-                court: true,
-            },
         });
 
-        if (!findCourtBooking) {
-            throw new BadRequestException('This Court booking ID not found in database');
+        if (!findCourtBookingById) {
+            throw new BadRequestException('this court booking ID is not found');
         }
 
-        return findCourtBooking;
+        return findCourtBookingById;
     }
 
     // NOTE - this is create court booking
-    async createCourtBooking(courtBookingData: CourtBookingDto) {
+    async createCourtBooking(courtBookingData: CourtBookingDTO) {
         const totalAmount = this.calculateTotalAmount(courtBookingData);
-
         const createCourtBooking = await this.prisma.courtBooking.create({
             data: {
                 ...courtBookingData,
-                booked_by: courtBookingData.first_name,
+                booked_by: courtBookingData.full_name,
                 total_amount: totalAmount,
                 court: {
                     create: courtBookingData.court.map((court) => ({
@@ -74,45 +71,77 @@ export class CourtBookingsService {
         return createCourtBooking;
     }
 
-    // NOTE - this is delete court booking
-    async deleteCourtBooking(courtBookingId: string) {
-        const courtBooking = await this.prisma.courtBooking.findFirst({
-            where: {
-                id: courtBookingId,
-            },
-            include: {
-                court: true,
-            },
-        });
-
-        if (!courtBooking) {
-            throw new BadRequestException(`This Court booking ID not found in database`);
-        }
-
-        const courtId = courtBooking.court.map((court) => court.id);
-
-        if (courtId.length > 0) {
-            await this.prisma.court.deleteMany({
-                where: {
-                    id: { in: courtId },
-                },
-            });
-        }
-
-        const deleteResult = await this.prisma.courtBooking.delete({
+    async updateCourtBooking(courtBookingId: string, courtBookingData: UpdateCourtDto) {
+        const findCourtBooking = await this.prisma.courtBooking.findFirst({
             where: {
                 id: courtBookingId,
             },
         });
 
-        return deleteResult;
+        if (!findCourtBooking) {
+            throw new BadRequestException('this court booking ID is not found');
+        }
+
+        const updateCourtBooking = await this.prisma.courtBooking.update({
+            where: {
+                id: courtBookingId,
+            },
+            data: {
+                ...courtBookingData,
+            },
+        });
+
+        return updateCourtBooking;
     }
 
-    calculateTotalAmount(courtBookingData: CourtBookingDto): number {
+    async deleteCourtBooking(courtBookingId: string) {
+        const findCourtBooking = await this.prisma.courtBooking.findFirst({
+            where: {
+                id: courtBookingId,
+            },
+        });
+
+        if (!findCourtBooking) {
+            throw new BadRequestException('this court booking ID is not found');
+        }
+
+        const deleteCourtBooking = await this.prisma.courtBooking.delete({
+            where: {
+                id: courtBookingId,
+            },
+        });
+
+        return deleteCourtBooking;
+    }
+
+    calculateTotalAmount(courtBookingData: CourtBookingDTO): number {
         let totalAmount = 0;
         courtBookingData.court.forEach((court) => {
             totalAmount += court.court_price;
         });
         return totalAmount;
+    }
+
+    async courtBookingPayment(paymentData: PaymentDTO) {
+        const bookingId = await this.prisma.courtBooking.findUnique({
+            where: {
+                id: paymentData.bookingId,
+            },
+        });
+
+        if (!bookingId) {
+            throw new BadRequestException('this court booking ID is not found');
+        }
+
+        const updatedBooking = await this.prisma.courtBooking.update({
+            where: {
+                id: paymentData.bookingId,
+            },
+            data: {
+                payment_Status: paymentData.payment_Status,
+            },
+        });
+
+        return updatedBooking;
     }
 }
