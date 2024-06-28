@@ -42,7 +42,7 @@ model Court {
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
 
-  courtBooking        courtBooking?         @relation(fields: [courtBookingId], references: [id])
+  courtBooking        CourtBooking?         @relation(fields: [courtBookingId], references: [id])
   CourtBookingPayment CourtBookingPayment[]
 
   @@map("courts")
@@ -58,7 +58,7 @@ model CourtTime {
   updated_at DateTime @default(now())
 }
 
-model courtBooking {
+model CourtBooking {
   id             String               @id @default(auto()) @map("_id") @db.ObjectId
   phone          String
   full_name      String
@@ -82,7 +82,7 @@ model CourtBookingHistory {
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
 
-  courtBooking courtBooking? @relation(fields: [courtBookingId], references: [id])
+  courtBooking CourtBooking? @relation(fields: [courtBookingId], references: [id])
 }
 
 model CourtBookingPayment {
@@ -96,5 +96,5 @@ model CourtBookingPayment {
   updated_at     DateTime      @default(now())
 
   court        Court        @relation(fields: [court_id], references: [id])
-  courtBooking courtBooking @relation(fields: [courtBookingId], references: [id])
+  courtBooking CourtBooking @relation(fields: [courtBookingId], references: [id])
 }
