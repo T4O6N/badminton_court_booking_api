@@ -4,6 +4,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { PaymentDTO } from './dto/payment.dto';
+import { CourtBookingHistoryDTO } from './dto/court-booking-history.dto';
 
 @ApiTags('CourtBookings API')
 @Controller('court-booking')
@@ -44,6 +45,11 @@ export class CourtBookingsController {
     @Get('history/:id')
     async getCourtBookingHistory(@Param('id') courtBookingId: string) {
         return await this.courtBookingsService.getCourtBookingHistory(courtBookingId);
+    }
+
+    @Post()
+    async createBookingHistory(courtBookingHistoryData: CourtBookingHistoryDTO) {
+        return await this.courtBookingsService.createBookingHistory(courtBookingHistoryData);
     }
 
     //!SECTION - Payment
