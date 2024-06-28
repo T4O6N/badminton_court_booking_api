@@ -42,7 +42,8 @@ model Court {
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
 
-  courtBooking courtBooking? @relation(fields: [courtBookingId], references: [id])
+  courtBooking        courtBooking?         @relation(fields: [courtBookingId], references: [id])
+  CourtBookingPayment CourtBookingPayment[]
 
   @@map("courts")
 }
@@ -58,18 +59,18 @@ model CourtTime {
 }
 
 model courtBooking {
-  id                  String               @id @default(auto()) @map("_id") @db.ObjectId
-  phone               String
-  full_name           String
-  payment_Status      PaymentStatus        @default(booked)
-  expiredTime         DateTime?            @map("expired_time")
-  booked_by           String
-  total_amount        Int
-  bookingTime         DateTime
-  created_at          DateTime             @default(now())
-  updated_at          DateTime             @default(now())
-  court               Court[]
-  bookingHistory      CourtBookingHistory?
+  id             String               @id @default(auto()) @map("_id") @db.ObjectId
+  phone          String
+  full_name      String
+  payment_Status PaymentStatus        @default(booked)
+  expiredTime    DateTime?            @map("expired_time")
+  booked_by      String
+  total_amount   Int
+  bookingDate    DateTime             @default(now())
+  created_at     DateTime             @default(now())
+  updated_at     DateTime             @default(now())
+  court          Court[]
+  bookingHistory CourtBookingHistory?
   bookingPayment CourtBookingPayment?
 
   @@map("bookings")
@@ -86,9 +87,14 @@ model CourtBookingHistory {
 
 model CourtBookingPayment {
   id             String        @id @default(auto()) @map("_id") @db.ObjectId
+  court_id       String        @db.ObjectId
   courtBookingId String        @unique @db.ObjectId
   total_amount   Int
   paymentStatus  PaymentStatus
+  payment_date   DateTime      @default(now())
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @default(now())
 
+  court        Court        @relation(fields: [court_id], references: [id])
   courtBooking courtBooking @relation(fields: [courtBookingId], references: [id])
 }

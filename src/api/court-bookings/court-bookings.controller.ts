@@ -4,9 +4,8 @@ import { ApiTags } from '@nestjs/swagger';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { PaymentDTO } from './dto/payment.dto';
-import { CourtBookingHistoryDTO } from './dto/court-booking-history.dto';
 
-@ApiTags('CourtBookings API')
+@ApiTags('Court-Bookings API')
 @Controller('court-booking')
 export class CourtBookingsController {
     constructor(private readonly courtBookingsService: CourtBookingsService) {}
@@ -38,18 +37,6 @@ export class CourtBookingsController {
     @Delete('/:id')
     async deleteCourtBooking(@Param('id') courtBookingId: string) {
         return await this.courtBookingsService.deleteCourtBooking(courtBookingId);
-    }
-
-    //!SECTION - History
-
-    @Get('history/:id')
-    async getCourtBookingHistory(@Param('id') courtBookingId: string) {
-        return await this.courtBookingsService.getCourtBookingHistory(courtBookingId);
-    }
-
-    @Post()
-    async createBookingHistory(courtBookingHistoryData: CourtBookingHistoryDTO) {
-        return await this.courtBookingsService.createBookingHistory(courtBookingHistoryData);
     }
 
     //!SECTION - Payment

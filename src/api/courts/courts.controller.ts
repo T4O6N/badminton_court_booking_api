@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { CourtsService } from './courts.service';
-import { CreateCourtDto } from './dto/create-court.dto';
+import { CourtDto } from './dto/create-court.dto';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
@@ -29,7 +29,7 @@ export class CourtsController {
     @ApiOperation({
         summary: 'Create one court',
     })
-    async createCourt(@Body() courtData: CreateCourtDto) {
+    async createCourt(@Body() courtData: CourtDto) {
         return this.courtsService.createCourt(courtData);
     }
 

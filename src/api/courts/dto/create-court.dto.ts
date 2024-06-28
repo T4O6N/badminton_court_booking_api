@@ -1,4 +1,4 @@
-export class CreateCourtDto {
+export class CourtDto {
     public court_number: string;
 
     public court_price: number;

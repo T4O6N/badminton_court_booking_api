@@ -3,11 +3,14 @@ import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { PaymentDTO } from './dto/payment.dto';
-import { CourtBookingHistoryDTO } from './dto/court-booking-history.dto';
+import { CourtBookingHistoryService } from '../court-booking-history/court-booking-history.service';
 
 @Injectable()
 export class CourtBookingsService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly courtBookingHistory: CourtBookingHistoryService,
+    ) {}
 
     // NOTE - this is get all court bookings
     async getCourtBookings() {
@@ -57,7 +60,7 @@ export class CourtBookingsService {
             },
         });
 
-        await this.createBookingHistory({
+        await this.courtBookingHistory.createBookingHistory({
             courtBookingId: createCourtBooking.id,
         });
 
@@ -113,25 +116,6 @@ export class CourtBookingsService {
             totalAmount += court.court_price;
         });
         return totalAmount;
-    }
-
-    //!SECTION - History
-
-    async createBookingHistory(courtBookingHistoryData: CourtBookingHistoryDTO) {
-        return await this.prisma.courtBookingHistory.create({
-            data: {
-                ...courtBookingHistoryData,
-            },
-        });
-    }
-
-    // NOTE - this is get all court bookings history
-    async getCourtBookingHistory(courtBookingId: string) {
-        return await this.prisma.courtBooking.findMany({
-            where: {
-                id: courtBookingId,
-            },
-        });
     }
 
     //!SECTION - PAYMENT
