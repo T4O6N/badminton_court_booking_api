@@ -1,8 +1,0 @@
-{
-    "USERNAME_REQUIRED": "Username is required",
-    "PASSWORD_REQUIRED": "Password is required",
-    "EMAIL_REQUIRED": "Email is required",
-    "EMAIL_NOT_MATCH": "Email is not match",
-    "IS_NOT_PHONE_OR_REF":"This {phoneOrRef} is not Phone or Reference number",
-    "IS_NOT_NUMBER":"This {phoneOrRef} is not number"
-  }
