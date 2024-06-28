@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
-import { CourtBookingDTO } from './dto/create-court-booking.dto';
+import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { PaymentDTO } from './dto/payment.dto';
+import { CourtBookingHistoryDTO } from './dto/court-booking-history.dto';
 
 @Injectable()
 export class CourtBookingsService {
@@ -20,18 +21,6 @@ export class CourtBookingsService {
         });
 
         return findCourtBooking;
-    }
-
-    // NOTE - this is get all court bookings history
-    async getCourtBookingHistory() {
-        return await this.prisma.courtBooking.findMany({
-            orderBy: {
-                created_at: 'desc',
-            },
-            include: {
-                court: true,
-            },
-        });
     }
 
     // NOTE - this is get court booking by id
@@ -66,6 +55,10 @@ export class CourtBookingsService {
             include: {
                 court: true,
             },
+        });
+
+        await this.createBookingHistory({
+            courtBookingId: createCourtBooking.id,
         });
 
         return createCourtBooking;
@@ -121,6 +114,27 @@ export class CourtBookingsService {
         });
         return totalAmount;
     }
+
+    //!SECTION - History
+
+    async createBookingHistory(courtBookingHistoryData: CourtBookingHistoryDTO) {
+        return await this.prisma.courtBookingHistory.create({
+            data: {
+                ...courtBookingHistoryData,
+            },
+        });
+    }
+
+    // NOTE - this is get all court bookings history
+    async getCourtBookingHistory(courtBookingId: string) {
+        return await this.prisma.courtBooking.findMany({
+            where: {
+                id: courtBookingId,
+            },
+        });
+    }
+
+    //!SECTION - PAYMENT
 
     async courtBookingPayment(paymentData: PaymentDTO) {
         const bookingId = await this.prisma.courtBooking.findUnique({
