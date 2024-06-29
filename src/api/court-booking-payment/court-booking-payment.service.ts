@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingPaymentDto } from './dto/court-booking-payment.dto';
-import { CourtBookingPaymentHistory } from '@prisma/client';
+import { CourtBookingPaymentHistoryDto } from './dto/court-booking-payment-history';
 
 @Injectable()
 export class CourtBookingPaymentService {
@@ -45,7 +45,7 @@ export class CourtBookingPaymentService {
         return createCourtBookingPayment;
     }
 
-    async createCourtBookingPaymentHistory(paymentHistory: CourtBookingPaymentHistory) {
+    async createCourtBookingPaymentHistory(paymentHistory: CourtBookingPaymentHistoryDto) {
         return await this.prisma.courtBookingPaymentHistory.create({
             data: {
                 ...paymentHistory,
