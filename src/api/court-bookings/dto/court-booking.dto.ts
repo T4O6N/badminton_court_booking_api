@@ -15,7 +15,7 @@ export class CourtBookingDTO {
 
     public full_name: string;
 
-    public payment_Status: PaymentStatus;
+    public payment_status: PaymentStatus;
 
     public expiredTime: Date;
 

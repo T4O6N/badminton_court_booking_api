@@ -2,15 +2,11 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
-import { PaymentDTO } from './dto/payment.dto';
-import { CourtBookingHistoryService } from '../court-booking-history/court-booking-history.service';
+import { CourtBookingHistory } from '@prisma/client';
 
 @Injectable()
 export class CourtBookingsService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly courtBookingHistory: CourtBookingHistoryService,
-    ) {}
+    constructor(private readonly prisma: PrismaService) {}
 
     // NOTE - this is get all court bookings
     async getCourtBookings() {
@@ -31,6 +27,9 @@ export class CourtBookingsService {
         const findCourtBookingById = await this.prisma.courtBooking.findFirst({
             where: {
                 id: courtBookingId,
+            },
+            include: {
+                court: true,
             },
         });
 
@@ -60,8 +59,10 @@ export class CourtBookingsService {
             },
         });
 
-        await this.courtBookingHistory.createBookingHistory({
-            courtBookingId: createCourtBooking.id,
+        await this.prisma.courtBookingHistory.create({
+            data: {
+                courtBookingId: createCourtBooking.id,
+            },
         });
 
         return createCourtBooking;
@@ -118,28 +119,33 @@ export class CourtBookingsService {
         return totalAmount;
     }
 
-    //!SECTION - PAYMENT
+    //!SECTION - court booking history
 
-    async courtBookingPayment(paymentData: PaymentDTO) {
-        const bookingId = await this.prisma.courtBooking.findUnique({
-            where: {
-                id: paymentData.bookingId,
-            },
-        });
-
-        if (!bookingId) {
-            throw new BadRequestException('this court booking ID is not found');
-        }
-
-        const updatedBooking = await this.prisma.courtBooking.update({
-            where: {
-                id: paymentData.bookingId,
-            },
+    async createBookingHistory(courtBookingHistoryData: CourtBookingHistory) {
+        return await this.prisma.courtBookingHistory.create({
             data: {
-                payment_Status: paymentData.payment_Status,
+                ...courtBookingHistoryData,
             },
         });
+    }
 
-        return updatedBooking;
+    async getAllCourtBookingHistory() {
+        return await this.prisma.courtBookingHistory.findMany({
+            include: {
+                courtBooking: true,
+            },
+        });
+    }
+
+    // NOTE - this is get all court bookings history
+    async getCourtBookingHistory(courtBookingId: string) {
+        return await this.prisma.courtBookingHistory.findUnique({
+            where: {
+                id: courtBookingId,
+            },
+            include: {
+                courtBooking: true,
+            },
+        });
     }
 }

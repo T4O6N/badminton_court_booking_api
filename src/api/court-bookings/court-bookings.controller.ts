@@ -3,9 +3,8 @@ import { CourtBookingsService } from './court-bookings.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
-import { PaymentDTO } from './dto/payment.dto';
 
-@ApiTags('Court-Bookings API')
+@ApiTags('Court-Booking API')
 @Controller('court-booking')
 export class CourtBookingsController {
     constructor(private readonly courtBookingsService: CourtBookingsService) {}
@@ -39,10 +38,15 @@ export class CourtBookingsController {
         return await this.courtBookingsService.deleteCourtBooking(courtBookingId);
     }
 
-    //!SECTION - Payment
+    //!SECTION - CourtBookingHistory
 
-    @Post('payment')
-    async courtBookingPayment(@Body() paymentData: PaymentDTO) {
-        return await this.courtBookingsService.courtBookingPayment(paymentData);
+    @Get('history')
+    async getAllCourtBookingHistory() {
+        return await this.courtBookingsService.getAllCourtBookingHistory();
+    }
+
+    @Get('history/:id')
+    async getCourtBookingHistory(@Param('id') courtBookingHistoryId: string) {
+        return await this.courtBookingsService.getCourtBookingHistory(courtBookingHistoryId);
     }
 }

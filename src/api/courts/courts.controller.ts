@@ -4,7 +4,7 @@ import { CourtDto } from './dto/create-court.dto';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Courts API')
+@ApiTags('Court API')
 @Controller('courts')
 export class CourtsController {
     constructor(private readonly courtsService: CourtsService) {}

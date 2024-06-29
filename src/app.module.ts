@@ -5,7 +5,7 @@ import { WinstonLoggerService } from './config/loggers/logger.service';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { CourtBookingsModule } from './api/court-bookings/court-bookings.module';
 import { CourtsModule } from './api/courts/courts.module';
-import { CourtBookingHistoryModule } from './api/court-booking-history/court-booking-history.module';
+import { CourtBookingPaymentModule } from './api/court-booking-payment/court-booking-payment.module';
 
 @Module({
     imports: [
@@ -15,7 +15,7 @@ import { CourtBookingHistoryModule } from './api/court-booking-history/court-boo
         PrismaModule,
         CourtsModule,
         CourtBookingsModule,
-        CourtBookingHistoryModule,
+        CourtBookingPaymentModule,
     ],
     controllers: [],
     providers: [WinstonLoggerService],
