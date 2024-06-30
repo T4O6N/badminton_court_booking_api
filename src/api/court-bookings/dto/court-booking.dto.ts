@@ -19,8 +19,6 @@ export class CourtBookingDTO {
 
     public payment_status: PaymentStatus;
 
-    public expiredTime: Date;
-
     public booked_by: string;
 
     public total_amount: number;

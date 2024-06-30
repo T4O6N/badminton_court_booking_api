@@ -42,11 +42,24 @@ export class CourtBookingsService {
 
     // NOTE - this is create court booking
     async createCourtBooking(courtBookingData: CourtBookingDTO) {
+        // calculate total amount
         const totalAmount = this.calculateTotalAmount(courtBookingData);
+
+        // expire time 30 minutes
+        const expiredTime = new Date();
+        expiredTime.setMinutes(expiredTime.getMinutes() + 30);
+
+        // meesage if expired
+        if (expiredTime <= new Date()) {
+            throw new BadRequestException('Booking cannot be made because the expiration time has passed.');
+        }
+
+        // create court booking
         const createCourtBooking = await this.prisma.courtBooking.create({
             data: {
                 ...courtBookingData,
                 booked_by: courtBookingData.full_name,
+                expiredTime: expiredTime,
                 total_amount: totalAmount,
                 court: {
                     create: courtBookingData.court.map((court) => ({
@@ -59,6 +72,7 @@ export class CourtBookingsService {
             },
         });
 
+        // create court booking history
         await this.prisma.courtBookingHistory.create({
             data: {
                 courtBookingId: createCourtBooking.id,
