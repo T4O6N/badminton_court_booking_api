@@ -36,8 +36,6 @@ model Court {
   courtBookingId String?  @db.ObjectId
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
-  court_number   String
-  court_price    Int
   date           String
   available      Boolean  @default(true)
   duration_time  String[]
@@ -65,10 +63,11 @@ model CourtBooking {
   device_id      String
   phone          String
   full_name      String
+  court_number   String
   payment_status PaymentStatus        @default(booked)
-  expiredTime    DateTime?            @map("expired_time")
-  booked_by      String
   total_amount   Int
+  booked_by      String
+  expiredTime    DateTime?            @map("expired_time")
   bookingDate    DateTime             @default(now())
   created_at     DateTime             @default(now())
   updated_at     DateTime             @default(now())

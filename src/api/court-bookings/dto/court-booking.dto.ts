@@ -1,10 +1,6 @@
 import { PaymentStatus } from '@prisma/client';
 
 export class CourtDTO {
-    public court_number: string;
-
-    public court_price: number;
-
     public date: string;
 
     public duration_time: string[];
@@ -17,11 +13,13 @@ export class CourtBookingDTO {
 
     public full_name: string;
 
+    public court_number: string;
+
     public payment_status: PaymentStatus;
 
-    public booked_by: string;
-
     public total_amount: number;
+
+    public booked_by: string;
 
     public bookingTime: Date;
 

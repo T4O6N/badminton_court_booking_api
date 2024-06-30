@@ -43,7 +43,7 @@ export class CourtBookingsService {
     // NOTE - this is create court booking
     async createCourtBooking(courtBookingData: CourtBookingDTO) {
         // calculate total amount
-        const totalAmount = this.calculateTotalAmount(courtBookingData);
+        // const totalAmount = this.calculateTotalAmount(courtBookingData);
 
         // expire time 30 minutes
         const expiredTime = new Date();
@@ -60,7 +60,7 @@ export class CourtBookingsService {
                 ...courtBookingData,
                 booked_by: courtBookingData.full_name,
                 expiredTime: expiredTime,
-                total_amount: totalAmount,
+                // total_amount: totalAmount,
                 court: {
                     create: courtBookingData.court.map((court) => ({
                         ...court,
@@ -126,13 +126,13 @@ export class CourtBookingsService {
         return deleteCourtBooking;
     }
 
-    calculateTotalAmount(courtBookingData: CourtBookingDTO): number {
-        let totalAmount = 0;
-        courtBookingData.court.forEach((court) => {
-            totalAmount += court.court_price;
-        });
-        return totalAmount;
-    }
+    // calculateTotalAmount(courtBookingData: CourtBookingDTO): number {
+    //     let totalAmount = 0;
+    //     courtBookingData.court.forEach((court) => {
+    //         totalAmount += court.court_price;
+    //     });
+    //     return totalAmount;
+    // }
 
     //!SECTION - court booking history
 
