@@ -33,13 +33,13 @@ enum PaymentStatus {
 
 model Court {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  court_number   String
-  court_price    Int
-  duration_time  String[]
-  available      Boolean  @default(true)
   courtBookingId String?  @db.ObjectId
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
+  court_number   String
+  court_price    Int
+  available      Boolean  @default(true)
+  duration_time  String[]
 
   courtBooking CourtBooking? @relation(fields: [courtBookingId], references: [id])
   // CourtBookingPayment CourtBookingPayment[]
