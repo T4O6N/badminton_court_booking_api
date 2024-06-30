@@ -38,6 +38,7 @@ model Court {
   updated_at     DateTime @default(now())
   court_number   String
   court_price    Int
+  date           String
   available      Boolean  @default(true)
   duration_time  String[]
 
