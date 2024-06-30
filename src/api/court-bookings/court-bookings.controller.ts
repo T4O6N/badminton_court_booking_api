@@ -45,8 +45,8 @@ export class CourtBookingsController {
         return await this.courtBookingsService.getAllCourtBookingHistory();
     }
 
-    @Get('history/:id')
-    async getCourtBookingHistory(@Param('id') courtBookingHistoryId: string) {
-        return await this.courtBookingsService.getCourtBookingHistory(courtBookingHistoryId);
+    @Get('history/:device_id')
+    async getCourtBookingHistory(@Param('device_id') device_id: string) {
+        return await this.courtBookingsService.getCourtBookingHistoryByDeviceId(device_id);
     }
 }

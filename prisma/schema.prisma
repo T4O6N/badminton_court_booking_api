@@ -62,6 +62,7 @@ model CourtTime {
 
 model CourtBooking {
   id             String               @id @default(auto()) @map("_id") @db.ObjectId
+  device_id      String
   phone          String
   full_name      String
   payment_status PaymentStatus        @default(booked)
@@ -80,6 +81,7 @@ model CourtBooking {
 
 model CourtBookingHistory {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  device_id      String
   courtBookingId String?  @unique @db.ObjectId
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
@@ -107,12 +109,12 @@ model CourtBookingPayment {
 }
 
 model CourtBookingPaymentHistory {
-  id                 String               @id @default(auto()) @map("_id") @db.ObjectId
-  booking_payment_id String?              @unique @db.ObjectId
-  created_at         DateTime             @default(now())
-  updated_at         DateTime             @default(now())
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
+  booking_payment_id String?  @unique @db.ObjectId
+  created_at         DateTime @default(now())
+  updated_at         DateTime @default(now())
 
-  booking_payment    CourtBookingPayment? @relation(fields: [booking_payment_id], references: [id])
+  booking_payment CourtBookingPayment? @relation(fields: [booking_payment_id], references: [id])
 
   @@map("courtBookingPaymentHistory")
 }

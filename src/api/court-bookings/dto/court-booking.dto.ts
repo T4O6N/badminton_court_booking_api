@@ -1,4 +1,4 @@
-import { PaymentStatus } from "@prisma/client";
+import { PaymentStatus } from '@prisma/client';
 
 export class CourtDTO {
     public court_number: string;
@@ -11,6 +11,8 @@ export class CourtDTO {
 }
 
 export class CourtBookingDTO {
+    public device_id: string;
+
     public phone: string;
 
     public full_name: string;

@@ -62,6 +62,7 @@ export class CourtBookingsService {
         await this.prisma.courtBookingHistory.create({
             data: {
                 courtBookingId: createCourtBooking.id,
+                device_id: courtBookingData.device_id,
             },
         });
 
@@ -138,10 +139,10 @@ export class CourtBookingsService {
     }
 
     // NOTE - this is get all court bookings history
-    async getCourtBookingHistory(courtBookingId: string) {
-        return await this.prisma.courtBookingHistory.findUnique({
+    async getCourtBookingHistoryByDeviceId(device_id: string) {
+        return await this.prisma.courtBookingHistory.findMany({
             where: {
-                id: courtBookingId,
+                device_id: device_id,
             },
             include: {
                 courtBooking: true,
