@@ -35,8 +35,7 @@ model Court {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   court_number   String
   court_price    Int
-  start_time     String
-  end_time       String
+  duration_time  String[]
   available      Boolean  @default(true)
   courtBookingId String?  @db.ObjectId
   created_at     DateTime @default(now())
