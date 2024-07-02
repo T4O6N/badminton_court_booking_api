@@ -40,7 +40,8 @@ model Court {
   available      Boolean  @default(true)
   duration_time  String[]
 
-  courtBooking CourtBooking? @relation(fields: [courtBookingId], references: [id])
+  courtBooking        CourtBooking?         @relation(fields: [courtBookingId], references: [id])
+  CourtBookingHistory CourtBookingHistory[]
   // CourtBookingPayment CourtBookingPayment[]
 
   @@map("courts")
@@ -48,8 +49,6 @@ model Court {
 
 model CourtTime {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  start_time String
-  end_time   String
   available  Boolean  @default(true)
   courtId    String   @db.ObjectId
   created_at DateTime @default(now())
@@ -82,10 +81,12 @@ model CourtBookingHistory {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   device_id      String
   courtBookingId String?  @unique @db.ObjectId
+  court_id       String?  @unique @db.ObjectId
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
 
   courtBooking CourtBooking? @relation(fields: [courtBookingId], references: [id])
+  court        Court?        @relation(fields: [court_id], references: [id])
 
   @@map("courtBookingHistory")
 }

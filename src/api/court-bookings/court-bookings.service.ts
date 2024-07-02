@@ -159,6 +159,7 @@ export class CourtBookingsService {
                 device_id: device_id,
             },
             include: {
+                court: true,
                 courtBooking: true,
             },
         });
