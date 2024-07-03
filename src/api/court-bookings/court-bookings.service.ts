@@ -159,8 +159,17 @@ export class CourtBookingsService {
                 device_id: device_id,
             },
             include: {
-                court: true,
-                courtBooking: true,
+                courtBooking: {
+                    include: {
+                        court: {
+                            select: {
+                                date: true,
+                                duration_time: true,
+                                available: true,
+                            },
+                        },
+                    },
+                },
             },
         });
     }

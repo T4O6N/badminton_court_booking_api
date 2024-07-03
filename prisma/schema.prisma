@@ -32,17 +32,18 @@ enum PaymentStatus {
 }
 
 model Court {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  courtBookingId String?  @db.ObjectId
-  created_at     DateTime @default(now())
-  updated_at     DateTime @default(now())
-  date           String
-  available      Boolean  @default(true)
-  duration_time  String[]
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at            DateTime @default(now())
+  updated_at            DateTime @default(now())
+  date                  String
+  duration_time         String[]
+  available             Boolean  @default(true)
+  courtBookingId        String?  @db.ObjectId
+  courtBookingHistoryId String?  @db.ObjectId
 
-  courtBooking        CourtBooking?         @relation(fields: [courtBookingId], references: [id])
-  CourtBookingHistory CourtBookingHistory[]
+  courtBooking        CourtBooking?        @relation(fields: [courtBookingId], references: [id])
   // CourtBookingPayment CourtBookingPayment[]
+  CourtBookingHistory CourtBookingHistory? @relation(fields: [courtBookingHistoryId], references: [id])
 
   @@map("courts")
 }
@@ -81,12 +82,11 @@ model CourtBookingHistory {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   device_id      String
   courtBookingId String?  @unique @db.ObjectId
-  court_id       String?  @unique @db.ObjectId
   created_at     DateTime @default(now())
   updated_at     DateTime @default(now())
+  court          Court[]
 
   courtBooking CourtBooking? @relation(fields: [courtBookingId], references: [id])
-  court        Court?        @relation(fields: [court_id], references: [id])
 
   @@map("courtBookingHistory")
 }
