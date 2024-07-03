@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingPaymentDto } from './dto/court-booking-payment.dto';
 import { CourtBookingPaymentHistoryDto } from './dto/court-booking-payment-history';
+import { PaymentStatus } from '@prisma/client';
 
 @Injectable()
 export class CourtBookingPaymentService {
@@ -21,6 +22,7 @@ export class CourtBookingPaymentService {
         const createCourtBookingPayment = await this.prisma.courtBookingPayment.create({
             data: {
                 ...courtBookingPaymentData,
+                payment_status: PaymentStatus.paided,
             },
             include: {
                 courtBooking: true,
@@ -32,7 +34,7 @@ export class CourtBookingPaymentService {
                 id: courtBookingPaymentData.courtBookingId,
             },
             data: {
-                payment_status: courtBookingPaymentData.payment_status,
+                payment_status: PaymentStatus.paided,
             },
         });
 

@@ -48,11 +48,11 @@ model Court {
 }
 
 model CourtTime {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  available  Boolean  @default(true)
-  courtId    String   @db.ObjectId
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  duration_time String[]
+  available     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now())
 
   @@map("courtTimes")
 }
@@ -95,8 +95,8 @@ model CourtBookingPayment {
   id             String        @id @default(auto()) @map("_id") @db.ObjectId
   // court_id       String        @db.ObjectId
   courtBookingId String        @unique @db.ObjectId
-  total_amount   Int
-  payment_status PaymentStatus
+  device_id      String
+  payment_status PaymentStatus @default(paided)
   payment_date   DateTime      @default(now())
   created_at     DateTime      @default(now())
   updated_at     DateTime      @default(now())
@@ -110,7 +110,7 @@ model CourtBookingPayment {
 
 model CourtBookingPaymentHistory {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId
-  booking_payment_id String?  @unique @db.ObjectId
+  booking_payment_id String   @unique @db.ObjectId
   created_at         DateTime @default(now())
   updated_at         DateTime @default(now())
 

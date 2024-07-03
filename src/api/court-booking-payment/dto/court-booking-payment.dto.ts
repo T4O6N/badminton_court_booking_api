@@ -1,7 +1,7 @@
-import { PaymentStatus } from "@prisma/client";
+import { PaymentStatus } from '@prisma/client';
 
 export class CourtBookingPaymentDto {
     courtBookingId: string;
-    total_amount: number;
+    device_id: string;
     payment_status: PaymentStatus;
 }
