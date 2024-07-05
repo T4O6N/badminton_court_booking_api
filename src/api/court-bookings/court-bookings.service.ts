@@ -3,6 +3,9 @@ import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { CourtBookingHistory } from '@prisma/client';
+import { parseDurationTime } from 'src/utils/timeUtil';
+import { isAfter } from 'date-fns';
+import { setVientianeTimezone } from 'src/utils/set-timezone';
 
 @Injectable()
 export class CourtBookingsService {
@@ -24,20 +27,64 @@ export class CourtBookingsService {
 
     // NOTE - this is get court booking by id
     async getCourtBookingById(courtBookingId: string) {
-        const findCourtBookingById = await this.prisma.courtBooking.findFirst({
+        const courtBooking = await this.prisma.courtBooking.findUnique({
             where: {
                 id: courtBookingId,
             },
             include: {
-                court: true,
+                court: {
+                    select: {
+                        id: true,
+                        court_booking_id: true,
+                        created_at: true,
+                        updated_at: true,
+                        date: true,
+                        duration_time: true,
+                        available: true,
+                    },
+                },
             },
         });
 
-        if (!findCourtBookingById) {
-            throw new BadRequestException('this court booking ID is not found');
+        if (!courtBooking) {
+            throw new BadRequestException('Court booking not found');
         }
 
-        return findCourtBookingById;
+        const currentTime = new Date();
+
+        for (const courtEntry of courtBooking.court) {
+            for (const durationTime of courtEntry.duration_time) {
+                const { end } = parseDurationTime(durationTime);
+
+                if (isAfter(currentTime, end)) {
+                    courtEntry.available = false;
+                    break;
+                }
+            }
+        }
+
+        const courtAvailableData = courtBooking.court.map((court) => ({
+            date: court.date,
+            duration_time: court.duration_time,
+            total_amount: courtBooking.total_amount,
+        }));
+
+        // Return structured data
+        return {
+            id: courtBooking.id,
+            device_id: courtBooking.device_id,
+            phone: courtBooking.phone,
+            full_name: courtBooking.full_name,
+            court_number: courtBooking.court_number,
+            payment_status: courtBooking.payment_status,
+            total_amount: courtBooking.total_amount,
+            booked_by: courtBooking.booked_by,
+            booking_time: courtBooking.booking_time,
+            created_at: courtBooking.created_at.toISOString(),
+            updated_at: courtBooking.updated_at.toISOString(),
+            court: courtBooking.court,
+            court_available: courtAvailableData,
+        };
     }
 
     // NOTE - this is create court booking
@@ -45,21 +92,13 @@ export class CourtBookingsService {
         // calculate total amount
         // const totalAmount = this.calculateTotalAmount(courtBookingData);
 
-        // expire time 30 minutes
-        const expiredTime = new Date();
-        expiredTime.setMinutes(expiredTime.getMinutes() + 30);
-
-        // meesage if expired
-        if (expiredTime <= new Date()) {
-            throw new BadRequestException('Booking cannot be made because the expiration time has passed.');
-        }
-
         // create court booking
+        const date = new Date();
         const createCourtBooking = await this.prisma.courtBooking.create({
             data: {
                 ...courtBookingData,
+                booking_time: setVientianeTimezone(date).time,
                 booked_by: courtBookingData.full_name,
-                expiredTime: expiredTime,
                 // total_amount: totalAmount,
                 court: {
                     create: courtBookingData.court.map((court) => ({
@@ -75,7 +114,7 @@ export class CourtBookingsService {
         // create court booking history
         await this.prisma.courtBookingHistory.create({
             data: {
-                courtBookingId: createCourtBooking.id,
+                court_booking_id: createCourtBooking.id,
                 device_id: courtBookingData.device_id,
             },
         });
@@ -147,7 +186,7 @@ export class CourtBookingsService {
     async getAllCourtBookingHistory() {
         return await this.prisma.courtBookingHistory.findMany({
             include: {
-                courtBooking: true,
+                court_booking: true,
             },
         });
     }
@@ -159,7 +198,7 @@ export class CourtBookingsService {
                 device_id: device_id,
             },
             include: {
-                courtBooking: {
+                court_booking: {
                     include: {
                         court: {
                             select: {

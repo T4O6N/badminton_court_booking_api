@@ -11,7 +11,7 @@ export class CourtBookingPaymentService {
     async createCourtBookingPayment(courtBookingPaymentData: CourtBookingPaymentDto) {
         const findCourtBooking = await this.prisma.courtBooking.findUnique({
             where: {
-                id: courtBookingPaymentData.courtBookingId,
+                id: courtBookingPaymentData.court_booking_id,
             },
         });
 
@@ -25,13 +25,13 @@ export class CourtBookingPaymentService {
                 payment_status: PaymentStatus.paided,
             },
             include: {
-                courtBooking: true,
+                court_booking: true,
             },
         });
 
         await this.prisma.courtBooking.update({
             where: {
-                id: courtBookingPaymentData.courtBookingId,
+                id: courtBookingPaymentData.court_booking_id,
             },
             data: {
                 payment_status: PaymentStatus.paided,

@@ -1,13 +1,21 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { CourtsService } from './courts.service';
-import { CourtDto } from './dto/create-court.dto';
+import { CourtDTO } from './dto/create-court.dto';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('Court API')
+@ApiTags('Courts API')
 @Controller('courts')
 export class CourtsController {
     constructor(private readonly courtsService: CourtsService) {}
+
+    @Post()
+    @ApiOperation({
+        summary: 'Create one court',
+    })
+    async createCourt(@Body() courtData: CourtDTO) {
+        return this.courtsService.createCourt(courtData);
+    }
 
     @Get('FindMany')
     @ApiOperation({
@@ -17,35 +25,27 @@ export class CourtsController {
         return this.courtsService.getCourts();
     }
 
-    @Get('ById/:id')
+    @Get('byId/:courtId')
     @ApiOperation({
-        summary: 'Find one court',
+        summary: 'Find one court by id',
     })
-    async getOneCourt(@Param('id') courtId: string) {
+    async getOneCourt(@Param('courtId') courtId: string) {
         return this.courtsService.getOneCourt(courtId);
     }
 
-    @Post()
+    @Patch(':courtId')
     @ApiOperation({
-        summary: 'Create one court',
+        summary: 'Update one court by id',
     })
-    async createCourt(@Body() courtData: CourtDto) {
-        return this.courtsService.createCourt(courtData);
-    }
-
-    @Patch(':id')
-    @ApiOperation({
-        summary: 'Update one court',
-    })
-    async updateCourt(@Param('id') courtId: string, @Body() courtData: UpdateCourtDto) {
+    async updateCourt(@Param('courtId') courtId: string, @Body() courtData: UpdateCourtDto) {
         return this.courtsService.updateCourt(courtId, courtData);
     }
 
-    @Delete('remove/:id')
+    @Delete('delete/:courtId')
     @ApiOperation({
-        summary: 'Delete one court',
+        summary: 'Delete one court by id',
     })
-    async deleteCourt(@Param('id') courtId: string) {
+    async deleteCourt(@Param('courtId') courtId: string) {
         return this.courtsService.deleteCourt(courtId);
     }
 }

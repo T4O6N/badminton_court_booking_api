@@ -1,11 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CourtDto } from './dto/create-court.dto';
+import { CourtDTO } from './dto/create-court.dto';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 
 @Injectable()
 export class CourtsService {
     constructor(private readonly prisma: PrismaService) {}
+
+    //NOTE - this is get all courts
     async getCourts() {
         const findCourts = await this.prisma.court.findMany({
             orderBy: {
@@ -16,6 +18,7 @@ export class CourtsService {
         return findCourts;
     }
 
+    //NOTE - this is get court by id
     async getOneCourt(courtId: string) {
         const findOneCourt = await this.prisma.court.findFirst({
             where: {
@@ -30,20 +33,21 @@ export class CourtsService {
         return findOneCourt;
     }
 
-    async createCourt(courtData: CourtDto) {
-        const createCourt = await this.prisma.court.create({
+    //NOTE - this is create court
+    async createCourt(courtData: CourtDTO) {
+        const createdCourt = await this.prisma.court.create({
             data: {
                 ...courtData,
             },
         });
 
-        return createCourt;
+        return createdCourt;
     }
 
     async updateCourt(courtId: string, courtData: UpdateCourtDto) {
         await this.getOneCourt(courtId);
 
-        const updateCourt = await this.prisma.court.update({
+        const updatedCourt = await this.prisma.court.update({
             where: {
                 id: courtId,
             },
@@ -52,18 +56,18 @@ export class CourtsService {
             },
         });
 
-        return updateCourt;
+        return updatedCourt;
     }
 
     async deleteCourt(courtId: string) {
         await this.getOneCourt(courtId);
 
-        const deleteCourt = await this.prisma.court.delete({
+        const deletedCourt = await this.prisma.court.delete({
             where: {
                 id: courtId,
             },
         });
 
-        return deleteCourt;
+        return deletedCourt;
     }
 }

@@ -1,27 +1,66 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { PaymentStatus } from '@prisma/client';
-
-export class CourtDTO {
-    public date: string;
-
-    public duration_time: string[];
-}
+import { CourtDTO } from 'src/api/courts/dto/create-court.dto';
 
 export class CourtBookingDTO {
-    public device_id: string;
+    @ApiProperty({
+        type: String,
+        description: 'device id',
+        example: 'UP1A.231005.007',
+    })
+    device_id: string;
 
-    public phone: string;
+    @ApiProperty({
+        type: String,
+        description: 'phone number',
+        example: '2055736369',
+    })
+    phone: string;
 
-    public full_name: string;
+    @ApiProperty({
+        type: String,
+        description: 'full name',
+        example: 'John Doe',
+    })
+    full_name: string;
 
-    public court_number: string;
+    @ApiProperty({
+        type: String,
+        description: 'court number',
+        example: 'A1',
+    })
+    court_number: string;
 
-    public payment_status: PaymentStatus;
+    @ApiProperty({
+        enum: PaymentStatus,
+        description: 'payment status',
+        example: 'paided',
+    })
+    payment_status: PaymentStatus;
 
-    public total_amount: number;
+    @ApiProperty({
+        type: Number,
+        description: 'total amount',
+        example: 120000,
+    })
+    total_amount: number;
 
-    public booked_by: string;
+    @ApiProperty({
+        type: String,
+        description: 'booked by',
+    })
+    booked_by: string;
 
-    public bookingTime: Date;
+    @ApiProperty({
+        type: Date,
+        description: 'booking time',
+        example: '2022-01-01T00:00:00.000Z',
+    })
+    booking_time: Date;
 
-    public court: CourtDTO[];
+    @ApiProperty({
+        type: [CourtDTO],
+        description: 'court',
+    })
+    court: CourtDTO[];
 }
