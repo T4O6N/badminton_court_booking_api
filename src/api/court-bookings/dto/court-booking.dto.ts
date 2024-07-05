@@ -52,13 +52,6 @@ export class CourtBookingDTO {
     booked_by: string;
 
     @ApiProperty({
-        type: Date,
-        description: 'booking time',
-        example: '2022-01-01T00:00:00.000Z',
-    })
-    booking_time: Date;
-
-    @ApiProperty({
         type: [CourtDTO],
         description: 'court',
     })

@@ -5,7 +5,6 @@ import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { CourtBookingHistory } from '@prisma/client';
 import { parseDurationTime } from 'src/utils/timeUtil';
 import { isAfter } from 'date-fns';
-import { setVientianeTimezone } from 'src/utils/set-timezone';
 
 @Injectable()
 export class CourtBookingsService {
@@ -79,7 +78,6 @@ export class CourtBookingsService {
             payment_status: courtBooking.payment_status,
             total_amount: courtBooking.total_amount,
             booked_by: courtBooking.booked_by,
-            booking_time: courtBooking.booking_time,
             created_at: courtBooking.created_at.toISOString(),
             updated_at: courtBooking.updated_at.toISOString(),
             court: courtBooking.court,
@@ -93,11 +91,9 @@ export class CourtBookingsService {
         // const totalAmount = this.calculateTotalAmount(courtBookingData);
 
         // create court booking
-        const date = new Date();
         const createCourtBooking = await this.prisma.courtBooking.create({
             data: {
                 ...courtBookingData,
-                booking_time: setVientianeTimezone(date).time,
                 booked_by: courtBookingData.full_name,
                 // total_amount: totalAmount,
                 court: {
