@@ -45,26 +45,26 @@ model Court {
 
   court_booking_id         String?  @db.ObjectId
   court_booking_history_id String?  @db.ObjectId
+  court_available_id       String?  @db.ObjectId
   date                     String
   duration_time            String[]
   available                Boolean  @default(true)
 
   court_booking         CourtBooking?        @relation(fields: [court_booking_id], references: [id])
   court_booking_history CourtBookingHistory? @relation(fields: [court_booking_history_id], references: [id])
-  CourtAvailable        CourtAvailable?      @relation(fields: [courtAvailableId], references: [id])
-  courtAvailableId      String?              @db.ObjectId
+  court_available       CourtAvailable?      @relation(fields: [court_available_id], references: [id])
 
   @@map("courts")
 }
 
 model CourtAvailable {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  created_at     DateTime @default(now())
-  updated_at     DateTime @default(now())
-  courtBookingId String?  @db.ObjectId
-  court          Court[]
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at       DateTime @default(now())
+  updated_at       DateTime @default(now())
+  court_booking_id String?  @db.ObjectId
+  court            Court[]
 
-  court_booking CourtBooking? @relation(fields: [courtBookingId], references: [id])
+  court_booking CourtBooking? @relation(fields: [court_booking_id], references: [id])
 
   @@map("courtAvailables")
 }
@@ -99,7 +99,7 @@ model CourtBooking {
 
   booking_history CourtBookingHistory?
   booking_payment CourtBookingPayment?
-  CourtAvailable  CourtAvailable[]
+  court_available CourtAvailable[]
 
   @@map("courtBookings")
 }
