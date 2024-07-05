@@ -31,90 +31,132 @@ enum PaymentStatus {
   paided
 }
 
-model Court {
-  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
-  created_at            DateTime @default(now())
-  updated_at            DateTime @default(now())
-  date                  String
-  duration_time         String[]
-  available             Boolean  @default(true)
-  courtBookingId        String?  @db.ObjectId
-  courtBookingHistoryId String?  @db.ObjectId
+enum CourtTimeStatus {
+  available
+  booked
+  expired
+}
 
-  courtBooking        CourtBooking?        @relation(fields: [courtBookingId], references: [id])
-  // CourtBookingPayment CourtBookingPayment[]
-  CourtBookingHistory CourtBookingHistory? @relation(fields: [courtBookingHistoryId], references: [id])
+//NOTE - Court model
+model Court {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  court_booking_id         String?  @db.ObjectId
+  court_booking_history_id String?  @db.ObjectId
+  date                     String
+  duration_time            String[]
+  available                Boolean  @default(true)
+
+  court_booking         CourtBooking?        @relation(fields: [court_booking_id], references: [id])
+  court_booking_history CourtBookingHistory? @relation(fields: [court_booking_history_id], references: [id])
+  CourtAvailable        CourtAvailable?      @relation(fields: [courtAvailableId], references: [id])
+  courtAvailableId      String?              @db.ObjectId
 
   @@map("courts")
 }
 
+model CourtAvailable {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now())
+  courtBookingId String?  @db.ObjectId
+  court          Court[]
+
+  court_booking CourtBooking? @relation(fields: [courtBookingId], references: [id])
+
+  @@map("courtAvailables")
+}
+
+//NOTE - Court Time model
 model CourtTime {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
   duration_time String[]
-  available     Boolean  @default(true)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @default(now())
+  status        CourtTimeStatus @default(available)
 
   @@map("courtTimes")
 }
 
+//NOTE - Court Booking model 
 model CourtBooking {
-  id             String               @id @default(auto()) @map("_id") @db.ObjectId
+  id             String        @id @default(auto()) @map("_id") @db.ObjectId
   device_id      String
   phone          String
   full_name      String
   court_number   String
-  payment_status PaymentStatus        @default(booked)
+  payment_status PaymentStatus @default(booked)
   total_amount   Int
   booked_by      String
-  expiredTime    DateTime?            @map("expired_time")
-  bookingDate    DateTime             @default(now())
-  created_at     DateTime             @default(now())
-  updated_at     DateTime             @default(now())
-  court          Court[]
-  bookingHistory CourtBookingHistory?
-  bookingPayment CourtBookingPayment?
+  booking_time   String
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @default(now())
+
+  court Court[]
+
+  booking_history CourtBookingHistory?
+  booking_payment CourtBookingPayment?
+  CourtAvailable  CourtAvailable[]
 
   @@map("courtBookings")
 }
 
+// Court booking history model
 model CourtBookingHistory {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  device_id      String
-  courtBookingId String?  @unique @db.ObjectId
-  created_at     DateTime @default(now())
-  updated_at     DateTime @default(now())
-  court          Court[]
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 
-  courtBooking CourtBooking? @relation(fields: [courtBookingId], references: [id])
+  device_id        String
+  court_booking_id String  @unique @db.ObjectId
+  court            Court[]
+
+  court_booking CourtBooking? @relation(fields: [court_booking_id], references: [id])
 
   @@map("courtBookingHistory")
 }
 
+//NOTE - Court booking payment model
 model CourtBookingPayment {
-  id             String        @id @default(auto()) @map("_id") @db.ObjectId
-  // court_id       String        @db.ObjectId
-  courtBookingId String        @unique @db.ObjectId
-  device_id      String
-  payment_status PaymentStatus @default(paided)
-  payment_date   DateTime      @default(now())
-  created_at     DateTime      @default(now())
-  updated_at     DateTime      @default(now())
+  id               String        @id @default(auto()) @map("_id") @db.ObjectId
+  court_booking_id String        @unique @db.ObjectId
+  device_id        String
+  payment_status   PaymentStatus @default(paided)
 
-  // court        Court        @relation(fields: [court_id], references: [id])
-  courtBooking    CourtBooking                @relation(fields: [courtBookingId], references: [id])
+  payment_date DateTime
+  created_at   DateTime @default(now())
+  updated_at   DateTime @default(now())
+
+  court_booking   CourtBooking                @relation(fields: [court_booking_id], references: [id])
   payment_history CourtBookingPaymentHistory?
 
   @@map("courtBookingPayments")
 }
 
+//NOTE - Court booking payment history model
 model CourtBookingPaymentHistory {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId
-  booking_payment_id String   @unique @db.ObjectId
-  created_at         DateTime @default(now())
-  updated_at         DateTime @default(now())
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  booking_payment_id String @unique @db.ObjectId
 
   booking_payment CourtBookingPayment? @relation(fields: [booking_payment_id], references: [id])
 
   @@map("courtBookingPaymentHistory")
+}
+
+//NOTE - Promotion model
+model Promotion {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  title    String
+  discount Int
+
+  @@map("promotion")
 }
