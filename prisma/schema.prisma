@@ -62,6 +62,7 @@ model CourtAvailable {
   created_at       DateTime @default(now())
   updated_at       DateTime @default(now())
   court_booking_id String?  @db.ObjectId
+  message          String
   court            Court[]
 
   court_booking CourtBooking? @relation(fields: [court_booking_id], references: [id])

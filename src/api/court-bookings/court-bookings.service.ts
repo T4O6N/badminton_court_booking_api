@@ -3,8 +3,7 @@ import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { CourtBookingHistory } from '@prisma/client';
-import { parseDurationTime } from 'src/utils/timeUtil';
-import { isAfter } from 'date-fns';
+import * as moment from 'moment';
 
 @Injectable()
 export class CourtBookingsService {
@@ -26,7 +25,7 @@ export class CourtBookingsService {
 
     // NOTE - this is get court booking by id
     async getCourtBookingById(courtBookingId: string) {
-        const courtBooking = await this.prisma.courtBooking.findUnique({
+        const findCourtBooking = await this.prisma.courtBooking.findUnique({
             where: {
                 id: courtBookingId,
             },
@@ -45,44 +44,76 @@ export class CourtBookingsService {
             },
         });
 
-        if (!courtBooking) {
+        if (!findCourtBooking) {
             throw new BadRequestException('Court booking not found');
         }
 
-        const currentTime = new Date();
+        // const durationTimeSlots = [
+        //     '9:00 AM - 10:00 AM',
+        //     '10:00 AM - 11:00 AM',
+        //     '11:00 AM - 12:00 PM',
+        //     '12:00 PM - 1:00 PM',
+        //     '1:00 PM - 2:00 PM',
+        //     '2:00 PM - 3:00 PM',
+        //     '3:00 PM - 4:00 PM',
+        //     '4:00 PM - 5:00 PM',
+        //     '5:00 PM - 6:00 PM',
+        //     '6:00 PM - 7:00 PM',
+        //     '7:00 PM - 8:00 PM',
+        //     '8:00 PM - 9:00 PM',
+        //     '9:00 PM - 10:00 PM',
+        //     '10:00 PM - 11:00 PM',
+        // ];
 
-        for (const courtEntry of courtBooking.court) {
-            for (const durationTime of courtEntry.duration_time) {
-                const { end } = parseDurationTime(durationTime);
+        const currentTime = moment();
 
-                if (isAfter(currentTime, end)) {
-                    courtEntry.available = false;
-                    break;
+        for (const court of findCourtBooking.court) {
+            for (const duration of court.duration_time) {
+                const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
+
+                if (currentTime.isAfter(end)) {
+                    // Update the court availability in the database
+                    await this.prisma.court.update({
+                        where: { id: court.id },
+                        data: { available: false },
+                    });
+
+                    throw new BadRequestException(`The booking duration (${duration}) has already passed. Payment cannot be made.`);
                 }
             }
         }
 
-        const courtAvailableData = courtBooking.court.map((court) => ({
+        // const courtAvailableData = findCourtBooking.court.map((court) => ({
+        //     date: court.date,
+        //     duration_time: court.duration_time,
+        //     total_amount: findCourtBooking.total_amount,
+        // }));
+
+        // // Return structured data
+        // return {
+        //     id: findCourtBooking.id,
+        //     device_id: findCourtBooking.device_id,
+        //     phone: findCourtBooking.phone,
+        //     full_name: findCourtBooking.full_name,
+        //     court_number: findCourtBooking.court_number,
+        //     payment_status: findCourtBooking.payment_status,
+        //     total_amount: findCourtBooking.total_amount,
+        //     booked_by: findCourtBooking.booked_by,
+        //     created_at: findCourtBooking.created_at.toISOString(),
+        //     updated_at: findCourtBooking.updated_at.toISOString(),
+        //     court: findCourtBooking.court,
+        //     court_available: courtAvailableData,
+        // };
+
+        // show only available court
+        const courtAvailableData = findCourtBooking.court.map((court) => ({
             date: court.date,
             duration_time: court.duration_time,
-            total_amount: courtBooking.total_amount,
+            total_amount: findCourtBooking.total_amount,
+            message: 'Court is available',
         }));
 
-        // Return structured data
-        return {
-            id: courtBooking.id,
-            device_id: courtBooking.device_id,
-            phone: courtBooking.phone,
-            full_name: courtBooking.full_name,
-            court_number: courtBooking.court_number,
-            payment_status: courtBooking.payment_status,
-            total_amount: courtBooking.total_amount,
-            booked_by: courtBooking.booked_by,
-            created_at: courtBooking.created_at.toISOString(),
-            updated_at: courtBooking.updated_at.toISOString(),
-            court: courtBooking.court,
-            court_available: courtAvailableData,
-        };
+        return { findCourtBooking, courtAvailableData };
     }
 
     // NOTE - this is create court booking

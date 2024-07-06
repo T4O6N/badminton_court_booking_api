@@ -52,7 +52,6 @@ export class CourtBookingDTO {
     booked_by: string;
 
     @ApiProperty({
-        type: [CourtDTO],
         description: 'court',
     })
     court: CourtDTO[];
