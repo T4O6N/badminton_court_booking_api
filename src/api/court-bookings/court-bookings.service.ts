@@ -3,7 +3,7 @@ import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { CourtBookingHistory } from '@prisma/client';
-import * as moment from 'moment';
+// import * as moment from 'moment';
 
 @Injectable()
 export class CourtBookingsService {
@@ -65,55 +65,35 @@ export class CourtBookingsService {
         //     '10:00 PM - 11:00 PM',
         // ];
 
-        const currentTime = moment();
+        // const currentTime = moment();
 
-        for (const court of findCourtBooking.court) {
-            for (const duration of court.duration_time) {
-                const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
+        // for (const court of findCourtBooking.court) {
+        //     for (const duration of court.duration_time) {
+        //         const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
 
-                if (currentTime.isAfter(end)) {
-                    // Update the court availability in the database
-                    await this.prisma.court.update({
-                        where: { id: court.id },
-                        data: { available: false },
-                    });
+        //         if (currentTime.isAfter(end)) {
+        //             // Update the court availability in the database
+        //             await this.prisma.court.update({
+        //                 where: { id: court.id },
+        //                 data: { available: false },
+        //             });
 
-                    throw new BadRequestException(`The booking duration (${duration}) has already passed. Payment cannot be made.`);
-                }
-            }
-        }
+        //             throw new BadRequestException(`The booking duration (${duration}) has already passed. Payment cannot be made.`);
+        //         }
+        //     }
+        // }
 
+        // // show only available court
         // const courtAvailableData = findCourtBooking.court.map((court) => ({
         //     date: court.date,
         //     duration_time: court.duration_time,
         //     total_amount: findCourtBooking.total_amount,
+        //     message: 'Court is available',
         // }));
 
-        // // Return structured data
-        // return {
-        //     id: findCourtBooking.id,
-        //     device_id: findCourtBooking.device_id,
-        //     phone: findCourtBooking.phone,
-        //     full_name: findCourtBooking.full_name,
-        //     court_number: findCourtBooking.court_number,
-        //     payment_status: findCourtBooking.payment_status,
-        //     total_amount: findCourtBooking.total_amount,
-        //     booked_by: findCourtBooking.booked_by,
-        //     created_at: findCourtBooking.created_at.toISOString(),
-        //     updated_at: findCourtBooking.updated_at.toISOString(),
-        //     court: findCourtBooking.court,
-        //     court_available: courtAvailableData,
-        // };
+        // return { findCourtBooking, courtAvailableData };
 
-        // show only available court
-        const courtAvailableData = findCourtBooking.court.map((court) => ({
-            date: court.date,
-            duration_time: court.duration_time,
-            total_amount: findCourtBooking.total_amount,
-            message: 'Court is available',
-        }));
-
-        return { findCourtBooking, courtAvailableData };
+        return findCourtBooking;
     }
 
     // NOTE - this is create court booking
