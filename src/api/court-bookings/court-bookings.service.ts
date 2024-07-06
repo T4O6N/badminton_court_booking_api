@@ -3,7 +3,7 @@ import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { CourtBookingHistory } from '@prisma/client';
-// import * as moment from 'moment';
+import * as moment from 'moment';
 
 @Injectable()
 export class CourtBookingsService {
@@ -66,34 +66,49 @@ export class CourtBookingsService {
         // ];
 
         // const currentTime = moment();
+        // // Update court availability based on duration time
+        // await Promise.all(
+        //     findCourtBooking.court.map(async (court) => {
+        //         for (const duration of court.duration_time) {
+        //             const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
 
-        // for (const court of findCourtBooking.court) {
-        //     for (const duration of court.duration_time) {
-        //         const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
-
-        //         if (currentTime.isAfter(end)) {
-        //             // Update the court availability in the database
-        //             await this.prisma.court.update({
-        //                 where: { id: court.id },
-        //                 data: { available: false },
-        //             });
-
-        //             throw new BadRequestException(`The booking duration (${duration}) has already passed. Payment cannot be made.`);
+        //             if (currentTime.isAfter(end)) {
+        //                 // Update the court availability in the database
+        //                 await this.prisma.court.update({
+        //                     where: { id: court.id },
+        //                     data: { available: false },
+        //                 });
+        //                 break; // No need to check further once we set it to unavailable
+        //             }
         //         }
-        //     }
-        // }
+        //     }),
+        // );
 
-        // // show only available court
-        // const courtAvailableData = findCourtBooking.court.map((court) => ({
-        //     date: court.date,
-        //     duration_time: court.duration_time,
-        //     total_amount: findCourtBooking.total_amount,
-        //     message: 'Court is available',
-        // }));
+        // Generate courtAvailableData with appropriate messages
+        const courtAvailableData = findCourtBooking.court.map((court) => {
+            // const messages = court.duration_time.map((duration) => {
+            //     const [start, end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
 
-        // return { findCourtBooking, courtAvailableData };
+            //     if (currentTime.isAfter(end)) {
+            //         return `The booking duration (${duration}) has already passed. Payment cannot be made.`;
+            //     } else if (currentTime.isBetween(start, end)) {
+            //         return `The booking duration (${duration}) is currently active. Payment cannot be made.`;
+            //     }
+            //     return `The booking duration (${duration}) is available.`;
+            // });
 
-        return findCourtBooking;
+            return {
+                date: court.date,
+                duration_time: court.duration_time,
+                total_amount: findCourtBooking.total_amount,
+                messages: 'not has something yet',
+            };
+        });
+
+        return {
+            findCourtBooking,
+            courtAvailableData,
+        };
     }
 
     // NOTE - this is create court booking
