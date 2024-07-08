@@ -116,7 +116,7 @@ export class CourtBookingsService {
         }
 
         const currentTime = moment();
-        const availableDurations = [];
+        const availableDurations: string[] = [];
         const courtPrice = 80000;
 
         // Check and collect available duration times
@@ -145,10 +145,17 @@ export class CourtBookingsService {
         const totalAvailableCount = availableDurations.length;
         const totalAmount = totalAvailableCount * courtPrice;
 
+        // Log for debugging
+        console.log('available durations:', availableDurations);
+        console.log('total available count:', totalAvailableCount);
+
         // Find existing CourtAvailable entry for the court booking
         const existingCourtAvailable = await this.prisma.courtAvailable.findFirst({
             where: { court_booking_id: courtBookingId },
         });
+
+        // Log for debugging
+        console.log('existing courtAvailable:', existingCourtAvailable);
 
         if (totalAvailableCount > 0) {
             if (existingCourtAvailable) {
@@ -177,7 +184,6 @@ export class CourtBookingsService {
                 });
             }
         } else if (existingCourtAvailable) {
-            // If there are no available durations but there is an existing entry, mark it as expired
             await this.prisma.courtAvailable.update({
                 where: { id: existingCourtAvailable.id },
                 data: {
@@ -189,14 +195,20 @@ export class CourtBookingsService {
             });
         }
 
-        return courtBooking;
+        // Refresh the court booking data to include the newly created/updated court_available
+        await this.prisma.courtBooking.findUnique({
+            where: {
+                id: courtBookingId,
+            },
+            include: {
+                court: true,
+                court_available: true,
+            },
+        });
     }
 
     // NOTE - this is create court booking
     async createCourtBooking(courtBookingData: CourtBookingDTO) {
-        // calculate total amount
-        // const totalAmount = this.calculateTotalAmount(courtBookingData);
-
         // create court booking
         const createCourtBooking = await this.prisma.courtBooking.create({
             data: {
@@ -269,16 +281,7 @@ export class CourtBookingsService {
         return deleteCourtBooking;
     }
 
-    // calculateTotalAmount(courtBookingData: CourtBookingDTO): number {
-    //     let totalAmount = 0;
-    //     courtBookingData.court.forEach((court) => {
-    //         totalAmount += court.court_price;
-    //     });
-    //     return totalAmount;
-    // }
-
     //!SECTION - court booking history
-
     async createBookingHistory(courtBookingHistoryData: CourtBookingHistory) {
         return await this.prisma.courtBookingHistory.create({
             data: {

@@ -82,6 +82,7 @@ model CourtBooking {
 
   court           Court[]
   court_available CourtAvailable[]
+  dash_board      Dashboard[]
 
   booking_history CourtBookingHistory?
   booking_payment CourtBookingPayment?
@@ -164,4 +165,13 @@ model CourtAvailable {
   CourtBookingPaymentHistory CourtBookingPaymentHistory?
 
   @@map("courtAvailables")
+}
+
+model Dashboard {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  court_booking_id String?  @db.ObjectId
+  created_at       DateTime @default(now())
+  updated_at       DateTime @default(now())
+
+  court_booking CourtBooking? @relation(fields: [court_booking_id], references: [id])
 }
