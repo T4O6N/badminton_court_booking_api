@@ -23,6 +23,9 @@ export class CourtBookingPaymentService {
                 ...courtBookingPaymentData,
                 payment_status: PaymentStatus.paided,
             },
+            include: {
+                court_available: true,
+            },
         });
 
         await this.prisma.courtBooking.update({

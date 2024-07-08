@@ -196,7 +196,7 @@ export class CourtBookingsService {
         }
 
         // Refresh the court booking data to include the newly created/updated court_available
-        await this.prisma.courtBooking.findUnique({
+        const updatedCourtBooking = await this.prisma.courtBooking.findUnique({
             where: {
                 id: courtBookingId,
             },
@@ -205,6 +205,7 @@ export class CourtBookingsService {
                 court_available: true,
             },
         });
+        return updatedCourtBooking;
     }
 
     // NOTE - this is create court booking
@@ -223,7 +224,6 @@ export class CourtBookingsService {
             },
             include: {
                 court: true,
-                court_available: true,
             },
         });
 
