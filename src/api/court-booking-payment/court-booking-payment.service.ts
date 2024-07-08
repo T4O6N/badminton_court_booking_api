@@ -55,6 +55,9 @@ export class CourtBookingPaymentService {
 
     async getCourtBookingPaymentHistory(device_id: string) {
         return await this.prisma.courtBookingPaymentHistory.findMany({
+            orderBy: {
+                created_at: 'desc',
+            },
             where: {
                 device_id: device_id,
             },

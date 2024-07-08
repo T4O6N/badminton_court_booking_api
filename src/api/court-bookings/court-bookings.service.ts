@@ -298,6 +298,9 @@ export class CourtBookingsService {
     // NOTE - this is get all court bookings history
     async getCourtBookingHistoryByDeviceId(device_id: string) {
         return await this.prisma.courtBookingHistory.findMany({
+            orderBy: {
+                created_at: 'desc',
+            },
             where: {
                 device_id: device_id,
             },
