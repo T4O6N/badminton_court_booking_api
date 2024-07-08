@@ -3,8 +3,7 @@ import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { CourtBookingHistory } from '@prisma/client';
-import { parseDurationTime } from 'src/utils/timeUtil';
-import { isAfter } from 'date-fns';
+import * as moment from 'moment';
 
 @Injectable()
 export class CourtBookingsService {
@@ -49,40 +48,148 @@ export class CourtBookingsService {
             throw new BadRequestException('Court booking not found');
         }
 
-        const currentTime = new Date();
+        const currentTime = moment();
 
-        for (const courtEntry of courtBooking.court) {
-            for (const durationTime of courtEntry.duration_time) {
-                const { end } = parseDurationTime(durationTime);
+        // Update court availability based on duration time
+        await Promise.all(
+            courtBooking.court.map(async (court) => {
+                for (const duration of court.duration_time) {
+                    const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
 
-                if (isAfter(currentTime, end)) {
-                    courtEntry.available = false;
-                    break;
+                    if (currentTime.isAfter(end)) {
+                        // Update the court availability in the database
+                        await this.prisma.court.update({
+                            where: { id: court.id },
+                            data: { available: false },
+                        });
+                        break;
+                    }
                 }
-            }
+            }),
+        );
+
+        courtBooking.court.map((court) => {
+            court.duration_time.map((duration) => {
+                const [start, end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
+
+                if (currentTime.isAfter(end)) {
+                } else if (currentTime.isBetween(start, end)) {
+                    return `ເວລາທີ່ທ່ານຈອງ (${duration}) ໄດ້ກາຍເວລາທີ່ກໍານົດແລ້ວ!!`;
+                }
+                return `ເວລາທີ່ທ່ານຈອງ (${duration}) ແມ່ນຍັງສາມາດໃຊ້ງານໄດ້.`;
+            });
+        });
+    }
+
+    async getCourtBookingById2(courtBookingId: string) {
+        const courtBooking = await this.prisma.courtBooking.findUnique({
+            where: {
+                id: courtBookingId,
+            },
+            include: {
+                court: {
+                    select: {
+                        id: true,
+                        court_booking_id: true,
+                        created_at: true,
+                        updated_at: true,
+                        date: true,
+                        duration_time: true,
+                        available: true,
+                    },
+                },
+                court_available: {
+                    select: {
+                        id: true,
+                        totalAllCourtAvailable: true,
+                        isExpiredAll: true,
+                        all_total_amount: true,
+                        date: true,
+                        duration_time: true,
+                    },
+                },
+            },
+        });
+
+        if (!courtBooking) {
+            throw new BadRequestException('Court booking not found');
         }
 
-        const courtAvailableData = courtBooking.court.map((court) => ({
-            date: court.date,
-            duration_time: court.duration_time,
-            total_amount: courtBooking.total_amount,
-        }));
+        const currentTime = moment();
+        const availableDurations = [];
+        const courtPrice = 80000;
 
-        // Return structured data
-        return {
-            id: courtBooking.id,
-            device_id: courtBooking.device_id,
-            phone: courtBooking.phone,
-            full_name: courtBooking.full_name,
-            court_number: courtBooking.court_number,
-            payment_status: courtBooking.payment_status,
-            total_amount: courtBooking.total_amount,
-            booked_by: courtBooking.booked_by,
-            created_at: courtBooking.created_at.toISOString(),
-            updated_at: courtBooking.updated_at.toISOString(),
-            court: courtBooking.court,
-            court_available: courtAvailableData,
-        };
+        // Check and collect available duration times
+        await Promise.all(
+            courtBooking.court.map(async (court) => {
+                let courtHasAvailableDurations = false;
+
+                const validDurations = court.duration_time.filter((duration) => {
+                    const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
+                    return currentTime.isBefore(end);
+                });
+
+                if (validDurations.length > 0) {
+                    courtHasAvailableDurations = true;
+                    availableDurations.push(...validDurations);
+                }
+
+                // Update the court availability based on valid durations
+                await this.prisma.court.update({
+                    where: { id: court.id },
+                    data: { available: courtHasAvailableDurations },
+                });
+            }),
+        );
+
+        const totalAvailableCount = availableDurations.length;
+        const totalAmount = totalAvailableCount * courtPrice;
+
+        // Find existing CourtAvailable entry for the court booking
+        const existingCourtAvailable = await this.prisma.courtAvailable.findFirst({
+            where: { court_booking_id: courtBookingId },
+        });
+
+        if (totalAvailableCount > 0) {
+            if (existingCourtAvailable) {
+                // Update existing entry
+                await this.prisma.courtAvailable.update({
+                    where: { id: existingCourtAvailable.id },
+                    data: {
+                        totalAllCourtAvailable: totalAvailableCount,
+                        isExpiredAll: false,
+                        all_total_amount: totalAmount,
+                        date: moment().format('YYYY-MM-DD'),
+                        duration_time: availableDurations,
+                    },
+                });
+            } else {
+                // Create new entry
+                await this.prisma.courtAvailable.create({
+                    data: {
+                        court_booking_id: courtBookingId,
+                        totalAllCourtAvailable: totalAvailableCount,
+                        isExpiredAll: false,
+                        all_total_amount: totalAmount,
+                        date: moment().format('YYYY-MM-DD'),
+                        duration_time: availableDurations,
+                    },
+                });
+            }
+        } else if (existingCourtAvailable) {
+            // If there are no available durations but there is an existing entry, mark it as expired
+            await this.prisma.courtAvailable.update({
+                where: { id: existingCourtAvailable.id },
+                data: {
+                    totalAllCourtAvailable: 0,
+                    isExpiredAll: true,
+                    all_total_amount: 0,
+                    duration_time: [],
+                },
+            });
+        }
+
+        return courtBooking;
     }
 
     // NOTE - this is create court booking
@@ -104,6 +211,7 @@ export class CourtBookingsService {
             },
             include: {
                 court: true,
+                court_available: true,
             },
         });
 
