@@ -134,7 +134,7 @@ model CourtBookingPaymentHistory {
   booking_payment CourtBookingPayment? @relation(fields: [booking_payment_id], references: [id])
   court_available CourtAvailable?      @relation(fields: [court_available_id], references: [id])
 
-  @@map("courtBookingPaymentHistory")
+  @@map("courtBookingPaymentHistories")
 }
 
 //NOTE - Promotion model
@@ -146,7 +146,7 @@ model Promotion {
   title    String
   discount Int
 
-  @@map("promotion")
+  @@map("promotions")
 }
 
 model CourtAvailable {
