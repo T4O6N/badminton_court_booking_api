@@ -8,6 +8,7 @@ import { CourtsModule } from './api/courts/courts.module';
 import { CourtBookingPaymentModule } from './api/court-booking-payment/court-booking-payment.module';
 import { CourtTimeModule } from './api/court-time/court-time.module';
 import { PromotionModule } from './api/promotion/promotion.module';
+import { DashboardModule } from './api/dashboard/dashboard.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { PromotionModule } from './api/promotion/promotion.module';
         CourtBookingsModule,
         CourtBookingPaymentModule,
         PromotionModule,
+        DashboardModule,
     ],
     controllers: [],
     providers: [WinstonLoggerService],
