@@ -45,29 +45,14 @@ model Court {
 
   court_booking_id         String?  @db.ObjectId
   court_booking_history_id String?  @db.ObjectId
-  court_available_id       String?  @db.ObjectId
   date                     String
   duration_time            String[]
   available                Boolean  @default(true)
 
   court_booking         CourtBooking?        @relation(fields: [court_booking_id], references: [id])
   court_booking_history CourtBookingHistory? @relation(fields: [court_booking_history_id], references: [id])
-  court_available       CourtAvailable?      @relation(fields: [court_available_id], references: [id])
 
   @@map("courts")
-}
-
-model CourtAvailable {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  created_at       DateTime @default(now())
-  updated_at       DateTime @default(now())
-  court_booking_id String?  @db.ObjectId
-  message          String
-  court            Court[]
-
-  court_booking CourtBooking? @relation(fields: [court_booking_id], references: [id])
-
-  @@map("courtAvailables")
 }
 
 //NOTE - Court Time model
@@ -95,11 +80,11 @@ model CourtBooking {
   created_at     DateTime      @default(now())
   updated_at     DateTime      @default(now())
 
-  court Court[]
+  court           Court[]
+  court_available CourtAvailable[]
 
   booking_history CourtBookingHistory?
   booking_payment CourtBookingPayment?
-  court_available CourtAvailable[]
 
   @@map("courtBookings")
 }
@@ -121,14 +106,14 @@ model CourtBookingHistory {
 
 //NOTE - Court booking payment model
 model CourtBookingPayment {
-  id               String        @id @default(auto()) @map("_id") @db.ObjectId
-  court_booking_id String        @unique @db.ObjectId
-  device_id        String
-  payment_status   PaymentStatus @default(paided)
+  id                 String        @id @default(auto()) @map("_id") @db.ObjectId
+  court_booking_id   String        @unique @db.ObjectId
+  court_available_id String?       @db.ObjectId
+  device_id          String
+  payment_status     PaymentStatus @default(paided)
 
-  payment_date DateTime
-  created_at   DateTime @default(now())
-  updated_at   DateTime @default(now())
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
 
   court_booking   CourtBooking                @relation(fields: [court_booking_id], references: [id])
   payment_history CourtBookingPaymentHistory?
@@ -142,9 +127,12 @@ model CourtBookingPaymentHistory {
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 
+  device_id          String
   booking_payment_id String @unique @db.ObjectId
+  court_available_id String @unique @db.ObjectId
 
   booking_payment CourtBookingPayment? @relation(fields: [booking_payment_id], references: [id])
+  court_available CourtAvailable?      @relation(fields: [court_available_id], references: [id])
 
   @@map("courtBookingPaymentHistory")
 }
@@ -159,4 +147,21 @@ model Promotion {
   discount Int
 
   @@map("promotion")
+}
+
+model CourtAvailable {
+  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
+  court_booking_id       String?  @db.ObjectId
+  created_at             DateTime @default(now())
+  updated_at             DateTime @default(now())
+  totalAllCourtAvailable Int
+  isExpiredAll           Boolean  @default(false)
+  all_total_amount       Int
+  date                   String
+  duration_time          String[]
+
+  court_booking              CourtBooking?               @relation(fields: [court_booking_id], references: [id])
+  CourtBookingPaymentHistory CourtBookingPaymentHistory?
+
+  @@map("courtAvailables")
 }

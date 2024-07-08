@@ -13,9 +13,9 @@ export class CourtBookingPaymentController {
         return await this.courtBookingPaymentService.createCourtBookingPayment(courtBookingPaymentData);
     }
 
-    @Get('payment-history')
-    async getCourtBookingPaymentHistory() {
-        return await this.courtBookingPaymentService.getCourtBookingPaymentHistory();
+    @Get('payment-history/:device_id')
+    async getCourtBookingPaymentHistory(@Param('device_id') device_id: string) {
+        return await this.courtBookingPaymentService.getCourtBookingPaymentHistory(device_id);
     }
 
     @Get('payment-history/:id')

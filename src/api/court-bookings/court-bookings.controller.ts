@@ -19,7 +19,7 @@ export class CourtBookingsController {
 
     @Get('ById/:id')
     async getCourtBookingById(@Param('id') courtBookingId: string) {
-        return await this.courtBookingsService.getCourtBookingById(courtBookingId);
+        return await this.courtBookingsService.getCourtBookingById2(courtBookingId);
     }
 
     // NOTE - this is create courtBooking

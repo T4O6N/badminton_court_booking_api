@@ -1,8 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingPaymentDto } from './dto/court-booking-payment.dto';
-import { CourtBookingPaymentHistoryDto } from './dto/court-booking-payment-history';
-import { PaymentStatus } from '@prisma/client';
+import { CourtBookingPaymentHistory, PaymentStatus } from '@prisma/client';
 
 @Injectable()
 export class CourtBookingPaymentService {
@@ -24,9 +23,6 @@ export class CourtBookingPaymentService {
                 ...courtBookingPaymentData,
                 payment_status: PaymentStatus.paided,
             },
-            include: {
-                court_booking: true,
-            },
         });
 
         await this.prisma.courtBooking.update({
@@ -41,13 +37,15 @@ export class CourtBookingPaymentService {
         await this.prisma.courtBookingPaymentHistory.create({
             data: {
                 booking_payment_id: createCourtBookingPayment.id,
+                court_available_id: courtBookingPaymentData.court_available_id,
+                device_id: courtBookingPaymentData.device_id,
             },
         });
 
         return createCourtBookingPayment;
     }
 
-    async createCourtBookingPaymentHistory(paymentHistory: CourtBookingPaymentHistoryDto) {
+    async createCourtBookingPaymentHistory(paymentHistory: CourtBookingPaymentHistory) {
         return await this.prisma.courtBookingPaymentHistory.create({
             data: {
                 ...paymentHistory,
@@ -55,10 +53,21 @@ export class CourtBookingPaymentService {
         });
     }
 
-    async getCourtBookingPaymentHistory() {
+    async getCourtBookingPaymentHistory(device_id: string) {
         return await this.prisma.courtBookingPaymentHistory.findMany({
+            where: {
+                device_id: device_id,
+            },
             include: {
-                booking_payment: true,
+                court_available: {
+                    select: {
+                        totalAllCourtAvailable: true,
+                        isExpiredAll: true,
+                        all_total_amount: true,
+                        date: true,
+                        duration_time: true,
+                    },
+                },
             },
         });
     }
