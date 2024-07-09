@@ -111,6 +111,8 @@ model CourtBookingPayment {
   court_booking_id   String        @unique @db.ObjectId
   court_available_id String?       @db.ObjectId
   device_id          String
+  date               String
+  payment_time       String
   payment_status     PaymentStatus @default(paided)
 
   created_at DateTime @default(now())

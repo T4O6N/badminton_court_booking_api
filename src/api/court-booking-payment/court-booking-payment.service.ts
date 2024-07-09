@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingPaymentDto } from './dto/court-booking-payment.dto';
 import { CourtBookingPaymentHistory, PaymentStatus } from '@prisma/client';
+import { setVientianeTimezone } from 'src/utils/set-timezone';
 
 @Injectable()
 export class CourtBookingPaymentService {
@@ -18,10 +19,13 @@ export class CourtBookingPaymentService {
             throw new BadRequestException('this court booking ID is not found');
         }
 
+        const date = new Date();
         const createCourtBookingPayment = await this.prisma.courtBookingPayment.create({
             data: {
                 ...courtBookingPaymentData,
                 payment_status: PaymentStatus.paided,
+                date: setVientianeTimezone(date).fullDate,
+                payment_time: setVientianeTimezone(date).time,
             },
             include: {
                 court_available: true,
@@ -67,6 +71,8 @@ export class CourtBookingPaymentService {
             include: {
                 booking_payment: {
                     select: {
+                        date: true,
+                        payment_time: true,
                         court_booking: {
                             select: {
                                 phone: true,
