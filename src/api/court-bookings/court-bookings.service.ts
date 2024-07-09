@@ -174,7 +174,7 @@ export class CourtBookingsService {
                         totalAllCourtAvailable: totalAvailableCount,
                         isExpiredAll: false,
                         all_total_amount: totalAmount,
-                        date: moment().format('YYYY-MM-DD'),
+                        date: courtBooking.court.map((court) => court.date).join(', '),
                         duration_time: availableDurations,
                     },
                 });
@@ -186,7 +186,7 @@ export class CourtBookingsService {
                         totalAllCourtAvailable: totalAvailableCount,
                         isExpiredAll: false,
                         all_total_amount: totalAmount,
-                        date: moment().format('YYYY-MM-DD'),
+                        date: courtBooking.court.map((court) => court.date).join(', '),
                         duration_time: availableDurations,
                     },
                 });
