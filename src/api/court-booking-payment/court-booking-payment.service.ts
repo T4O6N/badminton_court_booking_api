@@ -65,6 +65,17 @@ export class CourtBookingPaymentService {
                 device_id: device_id,
             },
             include: {
+                booking_payment: {
+                    select: {
+                        court_booking: {
+                            select: {
+                                phone: true,
+                                full_name: true,
+                                court_number: true,
+                            },
+                        },
+                    },
+                },
                 court_available: {
                     select: {
                         totalAllCourtAvailable: true,
