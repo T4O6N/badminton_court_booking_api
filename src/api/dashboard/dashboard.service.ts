@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PaymentStatus } from '@prisma/client';
-import { subWeeks, format, parseISO, getDay } from 'date-fns';
 import { PrismaService } from 'src/config/prisma/prisma.service';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class DashboardService {
@@ -31,43 +31,80 @@ export class DashboardService {
     }
 
     async getIncomeReport() {
-        const startDate = subWeeks(new Date(), 1);
-        const formattedStartDate = format(startDate, 'yyyy-MM-dd');
-
-        const courtBookings = await this.prisma.courtBooking.findMany({
+        // Step 1: Get income from CourtBookingPayment
+        const paymentIncome = await this.prisma.courtBookingPayment.findMany({
             where: {
                 payment_status: PaymentStatus.paided,
-                created_at: {
-                    gte: new Date(formattedStartDate),
-                },
             },
             include: {
-                court: true,
+                court_booking: {
+                    select: {
+                        court: {
+                            select: {
+                                date: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
-        const incomeReport = courtBookings.reduce((acc, booking) => {
-            booking.court.forEach((court) => {
-                if (!acc[court.date]) {
-                    acc[court.date] = 0;
+        // Step 2: Get total amount from CourtAvailable
+        const courtAvailables = await this.prisma.courtAvailable.findMany({
+            select: {
+                court_booking_id: true,
+                all_total_amount: true,
+            },
+        });
+
+        // Step 3: Prepare an array to store income for each day of the week
+        const weeklyIncome = [
+            { date: 'Monday', income: 0 },
+            { date: 'Tuesday', income: 0 },
+            { date: 'Wednesday', income: 0 },
+            { date: 'Thursday', income: 0 },
+            { date: 'Friday', income: 0 },
+            { date: 'Saturday', income: 0 },
+            { date: 'Sunday', income: 0 },
+        ];
+
+        // Step 4: Aggregate income by day of the week
+        paymentIncome.forEach((payment) => {
+            const court = Array.isArray(payment.court_booking?.court) ? payment.court_booking?.court[0] : payment.court_booking?.court;
+            if (court?.date) {
+                const date = moment(court.date, 'DD/MM/YYYY');
+                const dayOfWeek = date.format('dddd');
+                const courtAvailable = courtAvailables.find((ca) => ca.court_booking_id === payment.court_booking_id);
+                const totalAmount = courtAvailable ? +courtAvailable.all_total_amount : 0;
+                // Add income to the corresponding day of the week
+                switch (dayOfWeek) {
+                    case 'Monday':
+                        weeklyIncome[0].income += totalAmount;
+                        break;
+                    case 'Tuesday':
+                        weeklyIncome[1].income += totalAmount;
+                        break;
+                    case 'Wednesday':
+                        weeklyIncome[2].income += totalAmount;
+                        break;
+                    case 'Thursday':
+                        weeklyIncome[3].income += totalAmount;
+                        break;
+                    case 'Friday':
+                        weeklyIncome[4].income += totalAmount;
+                        break;
+                    case 'Saturday':
+                        weeklyIncome[5].income += totalAmount;
+                        break;
+                    case 'Sunday':
+                        weeklyIncome[6].income += totalAmount;
+                        break;
+                    default:
+                        break;
                 }
-                acc[court.date];
-            });
-            return acc;
-        }, {});
+            }
+        });
 
-        const getDayOfWeek = (dateString) => {
-            const date = parseISO(dateString);
-            const dayIndex = getDay(date);
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            return days[dayIndex];
-        };
-
-        const formattedIncomeReport = Object.entries(incomeReport).map(([court_date, income_amount]) => ({
-            day: getDayOfWeek(court_date),
-            income_amount,
-        }));
-
-        return formattedIncomeReport;
+        return weeklyIncome;
     }
 }
