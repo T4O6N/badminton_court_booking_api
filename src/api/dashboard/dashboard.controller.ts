@@ -5,8 +5,13 @@ import { DashboardService } from './dashboard.service';
 export class DashboardController {
     constructor(private readonly dashboardService: DashboardService) {}
 
-    @Get('court-count')
-    findAll() {
-        return this.dashboardService.getDashboard();
+    @Get('court-used-report')
+    async getCourtUsedReport() {
+        return this.dashboardService.getCourtUsedReport();
+    }
+
+    @Get('income-report')
+    async getIncomeReport() {
+        return await this.dashboardService.getIncomeReport();
     }
 }

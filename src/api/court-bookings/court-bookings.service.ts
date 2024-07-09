@@ -81,7 +81,13 @@ export class CourtBookingsService {
         });
     }
 
+    private usedCourtBookingIds = new Set<string>();
+
     async getCourtBookingById2(courtBookingId: string) {
+        if (this.usedCourtBookingIds.has(courtBookingId)) {
+            throw new BadRequestException('this court booking ID already used');
+        }
+
         const courtBooking = await this.prisma.courtBooking.findUnique({
             where: {
                 id: courtBookingId,
@@ -114,6 +120,8 @@ export class CourtBookingsService {
         if (!courtBooking) {
             throw new BadRequestException('Court booking not found');
         }
+
+        this.usedCourtBookingIds.add(courtBookingId);
 
         const currentTime = moment();
         const availableDurations: string[] = [];
@@ -196,7 +204,6 @@ export class CourtBookingsService {
         }
 
         // Refresh the court booking data to include the newly created/updated court_available
-        // test for commit
         const updatedCourtBooking = await this.prisma.courtBooking.findUnique({
             where: {
                 id: courtBookingId,
