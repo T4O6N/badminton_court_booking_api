@@ -59,13 +59,13 @@ export class DashboardService {
 
         // Step 3: Prepare an array to store income for each day of the week
         const weeklyIncome = [
-            { date: 'Monday', income: 0 },
-            { date: 'Tuesday', income: 0 },
-            { date: 'Wednesday', income: 0 },
-            { date: 'Thursday', income: 0 },
-            { date: 'Friday', income: 0 },
-            { date: 'Saturday', income: 0 },
-            { date: 'Sunday', income: 0 },
+            { day: 'Monday', income_amount: 0 },
+            { day: 'Tuesday', income_amount: 0 },
+            { day: 'Wednesday', income_amount: 0 },
+            { day: 'Thursday', income_amount: 0 },
+            { day: 'Friday', income_amount: 0 },
+            { day: 'Saturday', income_amount: 0 },
+            { day: 'Sunday', income_amount: 0 },
         ];
 
         // Step 4: Aggregate income by day of the week
@@ -79,25 +79,25 @@ export class DashboardService {
                 // Add income to the corresponding day of the week
                 switch (dayOfWeek) {
                     case 'Monday':
-                        weeklyIncome[0].income += totalAmount;
+                        weeklyIncome[0].income_amount += totalAmount;
                         break;
                     case 'Tuesday':
-                        weeklyIncome[1].income += totalAmount;
+                        weeklyIncome[1].income_amount += totalAmount;
                         break;
                     case 'Wednesday':
-                        weeklyIncome[2].income += totalAmount;
+                        weeklyIncome[2].income_amount += totalAmount;
                         break;
                     case 'Thursday':
-                        weeklyIncome[3].income += totalAmount;
+                        weeklyIncome[3].income_amount += totalAmount;
                         break;
                     case 'Friday':
-                        weeklyIncome[4].income += totalAmount;
+                        weeklyIncome[4].income_amount += totalAmount;
                         break;
                     case 'Saturday':
-                        weeklyIncome[5].income += totalAmount;
+                        weeklyIncome[5].income_amount += totalAmount;
                         break;
                     case 'Sunday':
-                        weeklyIncome[6].income += totalAmount;
+                        weeklyIncome[6].income_amount += totalAmount;
                         break;
                     default:
                         break;
@@ -105,6 +105,8 @@ export class DashboardService {
             }
         });
 
-        return weeklyIncome;
+        const totalWeeklyIncome = weeklyIncome.reduce((sum, day) => sum + day.income_amount, 0);
+
+        return { weeklyIncome, totalWeeklyIncome };
     }
 }
