@@ -8,7 +8,7 @@ export class DashboardService {
     constructor(private readonly prisma: PrismaService) {}
 
     async getCourtUsedReport() {
-        const allCourtNumbers = ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1', 'I1', 'J1'];
+        const allCourtNumbers = ['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9', 'J10'];
 
         const courtBookingCounts = await this.prisma.courtBooking.groupBy({
             by: ['court_number'],
