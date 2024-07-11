@@ -59,13 +59,13 @@ export class DashboardService {
 
         // Step 3: Prepare an array to store income for each day of the week
         const weeklyIncome = [
-            { day: 'Monday', income_amount: 0 },
-            { day: 'Tuesday', income_amount: 0 },
-            { day: 'Wednesday', income_amount: 0 },
-            { day: 'Thursday', income_amount: 0 },
-            { day: 'Friday', income_amount: 0 },
-            { day: 'Saturday', income_amount: 0 },
-            { day: 'Sunday', income_amount: 0 },
+            { day: 'Monday', income_amount: 400000 },
+            { day: 'Tuesday', income_amount: 640000 },
+            { day: 'Wednesday', income_amount: 720000 },
+            { day: 'Thursday', income_amount: 400000 },
+            { day: 'Friday', income_amount: 560000 },
+            { day: 'Saturday', income_amount: 960000 },
+            { day: 'Sunday', income_amount: 480000 },
         ];
 
         // Step 4: Aggregate income by day of the week
