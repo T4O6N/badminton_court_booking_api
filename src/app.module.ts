@@ -27,7 +27,7 @@ import { AuthModule } from './api/auth/auth.module';
         DashboardModule,
         UserOwnerModule,
         AdminModule,
-        AuthModule,
+        // AuthModule,
     ],
     providers: [WinstonLoggerService],
 })
