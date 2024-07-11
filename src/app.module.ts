@@ -11,7 +11,7 @@ import { PromotionModule } from './api/promotion/promotion.module';
 import { DashboardModule } from './api/dashboard/dashboard.module';
 import { UserOwnerModule } from './api/user-owner/user-owner.module';
 import { AdminModule } from './api/admin/admin.module';
-import { AuthModule } from './api/auth/auth.module';
+// import { AuthModule } from './api/auth/auth.module';
 
 @Module({
     imports: [
