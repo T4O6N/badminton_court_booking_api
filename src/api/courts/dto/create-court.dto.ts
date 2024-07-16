@@ -20,7 +20,7 @@ export class CourtDTO {
         description: 'court image',
         example: 'court image',
     })
-    court_image: string;
+    court_image: string[];
 
     @ApiProperty({
         required: true,
