@@ -6,35 +6,14 @@ function setTimezone(timeParam: moment.Moment, timezoneParam: string = 'Asia/Ban
 }
 
 function setVientianeTimezone(nowDate: Date): ISetVientianeTimezone {
-    const currentDateLocal = moment(nowDate.toISOString());
-    // get local timezone if timezone is equal to Asia/Bangkok or Asia/Vientiane
-    if (currentDateLocal.tz() === 'Asia/Bangkok' || currentDateLocal.tz() === 'Asia/Vientiane') {
-        const vtTimezone = currentDateLocal.tz();
-        return {
-            day: currentDateLocal.date(),
-            month: currentDateLocal.month() + 1,
-            year: currentDateLocal.year(),
-            time: currentDateLocal.format('HH:mm:ss'),
-            fullDate: vtTimezone,
-        };
-    } else {
-        const currentTimezoneOffsetInMinutes = new Date().getTimezoneOffset();
-        const currentTimezoneOffsetInHours = -currentTimezoneOffsetInMinutes / 60;
-
-        const currentDateTimeZone = currentDateLocal.utcOffset(currentTimezoneOffsetInHours).format();
-
-        const vtTimezone = moment().tz(currentDateTimeZone).tz('Asia/Bangkok').format();
-        console.log('it work');
-        console.log(vtTimezone);
-
-        return {
-            day: moment().tz(vtTimezone).date(),
-            month: moment().tz(vtTimezone).month() + 1,
-            year: moment().tz(vtTimezone).year(),
-            time: moment().tz(vtTimezone).format('HH:mm:ss'),
-            fullDate: vtTimezone,
-        };
-    }
+    const currentDateLocal = moment(nowDate).tz('Asia/Vientiane');
+    return {
+        day: currentDateLocal.date(),
+        month: currentDateLocal.month() + 1,
+        year: currentDateLocal.year(),
+        time: currentDateLocal.format('HH:mm:ss'),
+        fullDate: currentDateLocal.format(),
+    };
 }
 
 function setExpireTime(): Date {
