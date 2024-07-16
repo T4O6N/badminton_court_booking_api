@@ -18,7 +18,11 @@ export class CourtTimeService {
 
     //NOTE - this is get all court times
     async getCourtTimeSlots() {
-        return await this.prisma.courtTimeSlot.findMany();
+        return await this.prisma.courtTimeSlot.findMany({
+            orderBy: {
+                created_at: 'asc',
+            },
+        });
     }
 
     async getOneCourtTimeSlot(courtTimeSlotId: string) {

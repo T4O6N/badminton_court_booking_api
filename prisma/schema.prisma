@@ -24,10 +24,10 @@ model Court {
   updated_at DateTime @default(now())
 
   court_number String
-  court_time   String? @db.ObjectId
+  court_time   String?  @db.ObjectId
   description  String?
   court_image  String[]
-  available    Boolean @default(true)
+  available    Boolean  @default(true)
 
   CourtTimeSlot CourtTimeSlot? @relation(fields: [court_time], references: [id])
 
@@ -40,8 +40,8 @@ model CourtTimeSlot {
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
 
-  duration_time String[]
-  time_status   Boolean  @default(true)
+  duration_time String
+  status        Boolean @default(true)
 
   court Court[]
 
