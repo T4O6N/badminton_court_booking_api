@@ -20,6 +20,7 @@ export class CourtBookingPaymentService {
         }
 
         const date = new Date();
+        console.log(setVientianeTimezone(date));
         const createCourtBookingPayment = await this.prisma.courtBookingPayment.create({
             data: {
                 ...courtBookingPaymentData,

@@ -6,4 +6,5 @@ export class CourtBookingPaymentDto {
     device_id: string;
     payment_status: PaymentStatus;
     payment_date: Date;
+    payment_time: Date;
 }

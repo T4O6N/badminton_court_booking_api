@@ -2,15 +2,30 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CourtDTO {
     @ApiProperty({
-        type: String,
-        description: 'Date of court',
-        example: '2022-01-01',
+        required: true,
+        description: 'court number',
+        example: 'A1',
     })
-    date: string;
+    court_number: string;
 
     @ApiProperty({
-        description: 'Duration time of court',
-        example: '9:00 AM - 10:00 AM',
+        required: true,
+        description: 'court description',
+        example: 'court description',
     })
-    duration_time: string[];
+    description: string;
+
+    @ApiProperty({
+        required: true,
+        description: 'court image',
+        example: 'court image',
+    })
+    court_image: string;
+
+    @ApiProperty({
+        required: true,
+        description: 'court available',
+        example: 'true',
+    })
+    available: boolean;
 }

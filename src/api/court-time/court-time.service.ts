@@ -1,16 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
-import { CourtTimeDTO } from './dto/create-court-time.dto';
-// import { Cron } from '@nestjs/schedule';
-// import * as moment from 'moment';
-// import { CourtTimeStatus } from '@prisma/client';
+import { CourtTimeSlotDTO } from './dto/create-court-time.dto';
 
 @Injectable()
 export class CourtTimeService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async createCourtTime(courtTimeData: CourtTimeDTO) {
-        const createdCourtTime = await this.prisma.courtTime.create({
+    async createCourtTimeSlot(courtTimeData: CourtTimeSlotDTO) {
+        const createdCourtTime = await this.prisma.courtTimeSlot.create({
             data: {
                 ...courtTimeData,
             },
@@ -20,28 +17,21 @@ export class CourtTimeService {
     }
 
     //NOTE - this is get all court times
-    async getCourtTimes() {
-        return await this.prisma.courtTime.findMany();
+    async getCourtTimeSlots() {
+        return await this.prisma.courtTimeSlot.findMany();
     }
 
-    // @Cron('0 0 * * * *')
-    // async handleCourtTimes() {
-    //     const courtTimes = await this.prisma.courtTime.findMany();
+    async getOneCourtTimeSlot(courtTimeSlotId: string) {
+        const findOneCourtTimeSlot = await this.prisma.courtTimeSlot.findFirst({
+            where: {
+                id: courtTimeSlotId,
+            },
+        });
 
-    //     for (const courtTime of courtTimes) {
-    //         const currentTime = moment();
-    //         const courtTimeEnd = moment(courtTime.duration_time[1], 'h:mm A');
+        if (!findOneCourtTimeSlot) {
+            throw new BadRequestException('this court time ID is not found');
+        }
 
-    //         if (currentTime.isAfter(courtTimeEnd)) {
-    //             await this.prisma.courtTime.update({
-    //                 where: {
-    //                     id: courtTime.id,
-    //                 },
-    //                 data: {
-    //                     status: CourtTimeStatus.expired,
-    //                 },
-    //             });
-    //         }
-    //     }
-    // }
+        return findOneCourtTimeSlot;
+    }
 }

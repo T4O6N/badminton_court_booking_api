@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { PaymentStatus } from '@prisma/client';
-import { CourtDTO } from 'src/api/courts/dto/create-court.dto';
+import { CourtSessionDTO } from 'src/api/court-session/dto/create-court-session.dto';
 
 export class CourtBookingDTO {
     @ApiProperty({
@@ -52,7 +52,7 @@ export class CourtBookingDTO {
     booked_by: string;
 
     @ApiProperty({
-        description: 'court',
+        description: 'court session',
     })
-    court: CourtDTO[];
+    courtSession: CourtSessionDTO[];
 }

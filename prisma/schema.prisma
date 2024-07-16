@@ -18,14 +18,38 @@ enum PaymentStatus {
   paided
 }
 
-enum CourtTimeStatus {
-  available
-  booked
-  expired
+model Court {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  court_number String
+  court_time   String? @db.ObjectId
+  description  String?
+  court_image  String?
+  available    Boolean @default(true)
+
+  CourtTimeSlot CourtTimeSlot? @relation(fields: [court_time], references: [id])
+
+  @@map("courts")
+}
+
+//NOTE - Court Time model
+model CourtTimeSlot {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  duration_time String[]
+  time_status   Boolean  @default(true)
+
+  court Court[]
+
+  @@map("courtTimeSlots")
 }
 
 //NOTE - Court model
-model Court {
+model CourtSession {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
@@ -39,19 +63,7 @@ model Court {
   court_booking         CourtBooking?        @relation(fields: [court_booking_id], references: [id])
   court_booking_history CourtBookingHistory? @relation(fields: [court_booking_history_id], references: [id])
 
-  @@map("courts")
-}
-
-//NOTE - Court Time model
-model CourtTime {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
-
-  duration_time String[]
-  status        CourtTimeStatus @default(available)
-
-  @@map("courtTimes")
+  @@map("courtSessions")
 }
 
 //NOTE - Court Booking model 
@@ -67,7 +79,7 @@ model CourtBooking {
   created_at     DateTime      @default(now())
   updated_at     DateTime      @default(now())
 
-  court           Court[]
+  courtSession    CourtSession[]
   court_available CourtAvailable[]
 
   booking_history CourtBookingHistory?
@@ -83,8 +95,8 @@ model CourtBookingHistory {
   updated_at DateTime @default(now())
 
   device_id        String
-  court_booking_id String  @unique @db.ObjectId
-  court            Court[]
+  court_booking_id String         @unique @db.ObjectId
+  courtSession     CourtSession[]
 
   court_booking CourtBooking? @relation(fields: [court_booking_id], references: [id])
 
@@ -180,4 +192,25 @@ model UserOwner {
   updated_at DateTime? @default(now())
 
   @@map("user-owner")
+}
+
+model CourtUsedReport {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  court_used    String
+  booking_count Int
+  created_at    DateTime? @default(now())
+  updated_at    DateTime? @default(now())
+
+  @@map("courtUsedReports")
+}
+
+model WeeklyIncomeReport {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  day                 String
+  income_amount       Int
+  total_weekly_income Int       @default(0)
+  created_at          DateTime? @default(now())
+  updated_at          DateTime? @default(now())
+
+  @@map("weeklyIncomeReports")
 }
