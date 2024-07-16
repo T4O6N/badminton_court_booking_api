@@ -5,7 +5,7 @@ import { UpdateUserOwnerDTO } from './dto/update-user-owner.dto';
 import { UserOwner } from '@prisma/client';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('User Owner API')
+@ApiTags('User-Owner API')
 @Controller('user-owner')
 export class UserOwnerController {
     constructor(private readonly userOwnerService: UserOwnerService) {}

@@ -3,7 +3,7 @@ import { CourtTimeService } from './court-time.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CourtTimeSlotDTO } from './dto/create-court-time.dto';
 
-@ApiTags('CourtTime API')
+@ApiTags('Court-Time API')
 @Controller('court-time')
 export class CourtTimeController {
     constructor(private readonly courtTimeService: CourtTimeService) {}
