@@ -19,6 +19,17 @@ export class CourtBookingPaymentService {
             throw new BadRequestException('this court booking ID is not found');
         }
 
+        // Check if a payment already exists for this court booking
+        const existingPayment = await this.prisma.courtBookingPayment.findFirst({
+            where: {
+                court_booking_id: courtBookingPaymentData.court_booking_id,
+            },
+        });
+
+        if (existingPayment) {
+            throw new BadRequestException('Court booking has already been paid!!');
+        }
+
         const date = new Date();
         console.log(setVientianeTimezone(date));
         const createCourtBookingPayment = await this.prisma.courtBookingPayment.create({

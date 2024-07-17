@@ -81,13 +81,8 @@ export class CourtBookingsService {
         });
     }
 
-    // private usedCourtBookingIds = new Set<string>();
-
     async getCourtBookingById2(courtBookingId: string) {
-        // if (this.usedCourtBookingIds.has(courtBookingId)) {
-        //     throw new BadRequestException('this court booking ID already used');
-        // }
-
+        // console.log(new Date().toISOString());
         const courtBooking = await this.prisma.courtBooking.findUnique({
             where: {
                 id: courtBookingId,
