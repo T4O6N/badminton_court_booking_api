@@ -3,7 +3,7 @@ import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { CourtBookingHistory } from '@prisma/client';
-import moment from 'moment';
+import * as moment from 'moment';
 
 @Injectable()
 export class CourtBookingsService {
