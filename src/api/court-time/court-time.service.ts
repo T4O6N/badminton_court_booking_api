@@ -7,7 +7,7 @@ export class CourtTimeService {
     constructor(private readonly prisma: PrismaService) {}
 
     async createCourtTimeSlot(courtTimeData: CourtTimeSlotDTO) {
-        const createdCourtTime = await this.prisma.courtTimeSlot.create({
+        const createdCourtTime = await this.prisma.courtTime.create({
             data: {
                 ...courtTimeData,
             },
@@ -18,7 +18,7 @@ export class CourtTimeService {
 
     //NOTE - this is get all court times
     async getCourtTimeSlots() {
-        return await this.prisma.courtTimeSlot.findMany({
+        return await this.prisma.courtTime.findMany({
             orderBy: {
                 created_at: 'asc',
             },
@@ -26,7 +26,7 @@ export class CourtTimeService {
     }
 
     async getOneCourtTimeSlot(courtTimeSlotId: string) {
-        const findOneCourtTimeSlot = await this.prisma.courtTimeSlot.findFirst({
+        const findOneCourtTimeSlot = await this.prisma.courtTime.findFirst({
             where: {
                 id: courtTimeSlotId,
             },

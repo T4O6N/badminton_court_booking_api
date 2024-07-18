@@ -20,7 +20,7 @@ export class DashboardService {
             },
         });
 
-        // Format the data as needed 
+        // Format the data as needed
         const dashboardData = allCourtNumbers.map((courtNumber) => {
             const courtData = courtBookingCounts.find((item) => item.court_number === courtNumber);
 
@@ -139,7 +139,7 @@ export class DashboardService {
                         },
                         data: {
                             income_amount: day.income_amount,
-                            total_weekly_income: existingReport.total_weekly_income + day.income_amount,
+                            total_weekly_income: day.income_amount,
                             updated_at: new Date(),
                         },
                     });
@@ -149,6 +149,8 @@ export class DashboardService {
                             day: day.day,
                             income_amount: day.income_amount,
                             total_weekly_income: day.income_amount,
+                            created_at: new Date(),
+                            updated_at: new Date(),
                         },
                     });
                 }
