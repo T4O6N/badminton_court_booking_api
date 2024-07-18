@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingPaymentDto } from './dto/court-booking-payment.dto';
 import { CourtBookingPaymentHistory, PaymentStatus } from '@prisma/client';
+import { setVientianeTimezone } from 'src/utils/set-timezone';
 
 @Injectable()
 export class CourtBookingPaymentService {
@@ -18,10 +19,27 @@ export class CourtBookingPaymentService {
             throw new BadRequestException('this court booking ID is not found');
         }
 
+        // Check if a payment already exists for this court booking
+        const existingPayment = await this.prisma.courtBookingPayment.findFirst({
+            where: {
+                OR: [
+                    { court_booking_id: courtBookingPaymentData.court_booking_id },
+                    { court_available_id: courtBookingPaymentData.court_available_id },
+                ],
+            },
+        });
+
+        if (existingPayment) {
+            throw new BadRequestException('Court booking has already been paid!!');
+        }
+
+        const date = new Date();
         const createCourtBookingPayment = await this.prisma.courtBookingPayment.create({
             data: {
                 ...courtBookingPaymentData,
                 payment_status: PaymentStatus.paided,
+                date: setVientianeTimezone(date).fullDate,
+                payment_time: setVientianeTimezone(date).time,
             },
             include: {
                 court_available: true,
@@ -65,6 +83,19 @@ export class CourtBookingPaymentService {
                 device_id: device_id,
             },
             include: {
+                booking_payment: {
+                    select: {
+                        date: true,
+                        payment_time: true,
+                        court_booking: {
+                            select: {
+                                phone: true,
+                                full_name: true,
+                                court_number: true,
+                            },
+                        },
+                    },
+                },
                 court_available: {
                     select: {
                         totalAllCourtAvailable: true,

@@ -3,7 +3,7 @@ import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingDTO } from './dto/court-booking.dto';
 import { UpdateCourtDto } from '../courts/dto/update-court.dto';
 import { CourtBookingHistory } from '@prisma/client';
-import * as moment from 'moment';
+import moment from 'moment';
 
 @Injectable()
 export class CourtBookingsService {
@@ -16,7 +16,7 @@ export class CourtBookingsService {
                 created_at: 'desc',
             },
             include: {
-                court: true,
+                courtSession: true,
             },
         });
 
@@ -30,7 +30,7 @@ export class CourtBookingsService {
                 id: courtBookingId,
             },
             include: {
-                court: {
+                courtSession: {
                     select: {
                         id: true,
                         court_booking_id: true,
@@ -52,13 +52,13 @@ export class CourtBookingsService {
 
         // Update court availability based on duration time
         await Promise.all(
-            courtBooking.court.map(async (court) => {
+            courtBooking.courtSession.map(async (court) => {
                 for (const duration of court.duration_time) {
                     const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
 
                     if (currentTime.isAfter(end)) {
                         // Update the court availability in the database
-                        await this.prisma.court.update({
+                        await this.prisma.courtSession.update({
                             where: { id: court.id },
                             data: { available: false },
                         });
@@ -68,7 +68,7 @@ export class CourtBookingsService {
             }),
         );
 
-        courtBooking.court.map((court) => {
+        courtBooking.courtSession.map((court) => {
             court.duration_time.map((duration) => {
                 const [start, end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
 
@@ -82,12 +82,13 @@ export class CourtBookingsService {
     }
 
     async getCourtBookingById2(courtBookingId: string) {
+        // console.log(new Date().toISOString());
         const courtBooking = await this.prisma.courtBooking.findUnique({
             where: {
                 id: courtBookingId,
             },
             include: {
-                court: {
+                courtSession: {
                     select: {
                         id: true,
                         court_booking_id: true,
@@ -115,13 +116,15 @@ export class CourtBookingsService {
             throw new BadRequestException('Court booking not found');
         }
 
+        // this.usedCourtBookingIds.add(courtBookingId);
+
         const currentTime = moment();
         const availableDurations: string[] = [];
         const courtPrice = 80000;
 
         // Check and collect available duration times
         await Promise.all(
-            courtBooking.court.map(async (court) => {
+            courtBooking.courtSession.map(async (court) => {
                 let courtHasAvailableDurations = false;
 
                 const validDurations = court.duration_time.filter((duration) => {
@@ -135,7 +138,7 @@ export class CourtBookingsService {
                 }
 
                 // Update the court availability based on valid durations
-                await this.prisma.court.update({
+                await this.prisma.courtSession.update({
                     where: { id: court.id },
                     data: { available: courtHasAvailableDurations },
                 });
@@ -166,7 +169,7 @@ export class CourtBookingsService {
                         totalAllCourtAvailable: totalAvailableCount,
                         isExpiredAll: false,
                         all_total_amount: totalAmount,
-                        date: moment().format('YYYY-MM-DD'),
+                        date: courtBooking.courtSession.map((court) => court.date).join(', '),
                         duration_time: availableDurations,
                     },
                 });
@@ -178,7 +181,7 @@ export class CourtBookingsService {
                         totalAllCourtAvailable: totalAvailableCount,
                         isExpiredAll: false,
                         all_total_amount: totalAmount,
-                        date: moment().format('YYYY-MM-DD'),
+                        date: courtBooking.courtSession.map((court) => court.date).join(', '),
                         duration_time: availableDurations,
                     },
                 });
@@ -196,13 +199,12 @@ export class CourtBookingsService {
         }
 
         // Refresh the court booking data to include the newly created/updated court_available
-        // test for commit
         const updatedCourtBooking = await this.prisma.courtBooking.findUnique({
             where: {
                 id: courtBookingId,
             },
             include: {
-                court: true,
+                courtSession: true,
                 court_available: true,
             },
         });
@@ -217,14 +219,14 @@ export class CourtBookingsService {
                 ...courtBookingData,
                 booked_by: courtBookingData.full_name,
                 // total_amount: totalAmount,
-                court: {
-                    create: courtBookingData.court.map((court) => ({
+                courtSession: {
+                    create: courtBookingData.courtSession.map((court) => ({
                         ...court,
                     })),
                 },
             },
             include: {
-                court: true,
+                courtSession: true,
             },
         });
 
@@ -311,7 +313,7 @@ export class CourtBookingsService {
             include: {
                 court_booking: {
                     include: {
-                        court: {
+                        courtSession: {
                             select: {
                                 date: true,
                                 duration_time: true,

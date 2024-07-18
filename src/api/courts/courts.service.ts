@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CourtDTO } from './dto/create-court.dto';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { PrismaService } from 'src/config/prisma/prisma.service';
+import { CourtDTO } from './dto/create-court.dto';
 
 @Injectable()
 export class CourtsService {
@@ -38,6 +38,7 @@ export class CourtsService {
         const createdCourt = await this.prisma.court.create({
             data: {
                 ...courtData,
+                available: true,
             },
         });
 

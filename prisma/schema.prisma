@@ -13,32 +13,43 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum courtNum {
-  A1
-  B1
-  C1
-  D1
-  E1
-  F1
-  G1
-  H1
-  I1
-  J1
-}
-
 enum PaymentStatus {
   booked
   paided
 }
 
-enum CourtTimeStatus {
-  available
-  booked
-  expired
+model Court {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  court_number String
+  court_time   String?  @db.ObjectId
+  description  String?
+  court_image  String[]
+  available    Boolean  @default(true)
+
+  courtTime CourtTime? @relation(fields: [court_time], references: [id])
+
+  @@map("courts")
+}
+
+//NOTE - Court Time model
+model CourtTime {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  duration_time String
+  status        Boolean @default(true)
+
+  court Court[]
+
+  @@map("courtTimes")
 }
 
 //NOTE - Court model
-model Court {
+model CourtSession {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
@@ -52,19 +63,7 @@ model Court {
   court_booking         CourtBooking?        @relation(fields: [court_booking_id], references: [id])
   court_booking_history CourtBookingHistory? @relation(fields: [court_booking_history_id], references: [id])
 
-  @@map("courts")
-}
-
-//NOTE - Court Time model
-model CourtTime {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  created_at DateTime @default(now())
-  updated_at DateTime @default(now())
-
-  duration_time String[]
-  status        CourtTimeStatus @default(available)
-
-  @@map("courtTimes")
+  @@map("courtSessions")
 }
 
 //NOTE - Court Booking model 
@@ -80,9 +79,8 @@ model CourtBooking {
   created_at     DateTime      @default(now())
   updated_at     DateTime      @default(now())
 
-  court           Court[]
+  courtSession    CourtSession[]
   court_available CourtAvailable[]
-  dash_board      Dashboard[]
 
   booking_history CourtBookingHistory?
   booking_payment CourtBookingPayment?
@@ -97,8 +95,8 @@ model CourtBookingHistory {
   updated_at DateTime @default(now())
 
   device_id        String
-  court_booking_id String  @unique @db.ObjectId
-  court            Court[]
+  court_booking_id String         @unique @db.ObjectId
+  courtSession     CourtSession[]
 
   court_booking CourtBooking? @relation(fields: [court_booking_id], references: [id])
 
@@ -111,6 +109,8 @@ model CourtBookingPayment {
   court_booking_id   String        @unique @db.ObjectId
   court_available_id String?       @db.ObjectId
   device_id          String
+  date               String
+  payment_time       String
   payment_status     PaymentStatus @default(paided)
 
   created_at DateTime @default(now())
@@ -170,11 +170,63 @@ model CourtAvailable {
   @@map("courtAvailables")
 }
 
-model Dashboard {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  court_booking_id String?  @db.ObjectId
-  created_at       DateTime @default(now())
-  updated_at       DateTime @default(now())
+model Admin {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  is_active  Boolean   @default(false)
+  username   String?
+  phone      String?
+  password   String?
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
 
-  court_booking CourtBooking? @relation(fields: [court_booking_id], references: [id])
+  @@map("admin")
+}
+
+model UserOwner {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  is_active  Boolean   @default(false)
+  username   String?
+  phone      String?
+  password   String?
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("user-owner")
+}
+
+model CourtUsedReport {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  court_used    String
+  booking_count Int
+  created_at    DateTime? @default(now())
+  updated_at    DateTime? @default(now())
+
+  @@map("courtUsedReports")
+}
+
+model WeeklyIncomeReport {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  day                 String
+  income_amount       Int
+  total_weekly_income Int       @default(0)
+  created_at          DateTime? @default(now())
+  updated_at          DateTime? @default(now())
+
+  @@map("weeklyIncomeReports")
+}
+
+model IncomeReport {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  weekStart   DateTime
+  weekEnd     DateTime
+  monday      Float     @default(0)
+  tuesday     Float     @default(0)
+  wednesday   Float     @default(0)
+  thursday    Float     @default(0)
+  friday      Float     @default(0)
+  saturday    Float     @default(0)
+  sunday      Float     @default(0)
+  totalIncome Float     @default(0)
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @default(now())
 }

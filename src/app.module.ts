@@ -9,6 +9,10 @@ import { CourtBookingPaymentModule } from './api/court-booking-payment/court-boo
 import { CourtTimeModule } from './api/court-time/court-time.module';
 import { PromotionModule } from './api/promotion/promotion.module';
 import { DashboardModule } from './api/dashboard/dashboard.module';
+import { UserOwnerModule } from './api/user-owner/user-owner.module';
+import { AdminModule } from './api/admin/admin.module';
+import { CourtSessionModule } from './api/court-session/court-session.module';
+// import { AuthModule } from './api/auth/auth.module';
 
 @Module({
     imports: [
@@ -18,12 +22,14 @@ import { DashboardModule } from './api/dashboard/dashboard.module';
         PrismaModule,
         CourtsModule,
         CourtTimeModule,
+        CourtSessionModule,
         CourtBookingsModule,
         CourtBookingPaymentModule,
         PromotionModule,
         DashboardModule,
+        UserOwnerModule,
+        AdminModule,
     ],
-    controllers: [],
     providers: [WinstonLoggerService],
 })
 export class AppModule {

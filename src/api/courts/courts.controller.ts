@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { CourtsService } from './courts.service';
-import { CourtDTO } from './dto/create-court.dto';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CourtDTO } from './dto/create-court.dto';
 
 @ApiTags('Courts API')
 @Controller('courts')
