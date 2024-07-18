@@ -29,13 +29,13 @@ model Court {
   court_image  String[]
   available    Boolean  @default(true)
 
-  CourtTimeSlot CourtTimeSlot? @relation(fields: [court_time], references: [id])
+  courtTime CourtTime? @relation(fields: [court_time], references: [id])
 
   @@map("courts")
 }
 
 //NOTE - Court Time model
-model CourtTimeSlot {
+model CourtTime {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
@@ -45,7 +45,7 @@ model CourtTimeSlot {
 
   court Court[]
 
-  @@map("courtTimeSlots")
+  @@map("courtTimes")
 }
 
 //NOTE - Court model
@@ -213,4 +213,20 @@ model WeeklyIncomeReport {
   updated_at          DateTime? @default(now())
 
   @@map("weeklyIncomeReports")
+}
+
+model IncomeReport {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  weekStart   DateTime
+  weekEnd     DateTime
+  monday      Float     @default(0)
+  tuesday     Float     @default(0)
+  wednesday   Float     @default(0)
+  thursday    Float     @default(0)
+  friday      Float     @default(0)
+  saturday    Float     @default(0)
+  sunday      Float     @default(0)
+  totalIncome Float     @default(0)
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @default(now())
 }
