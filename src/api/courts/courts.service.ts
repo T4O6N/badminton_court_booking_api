@@ -34,10 +34,12 @@ export class CourtsService {
     }
 
     //NOTE - this is create court
-    async createCourt(courtData: CourtDTO) {
+    async createCourt(courtData: CourtDTO, image: Express.Multer.File) {
+        const filename = image ? image.filename : null;
         const createdCourt = await this.prisma.court.create({
             data: {
                 ...courtData,
+                court_image: filename,
                 available: true,
             },
         });

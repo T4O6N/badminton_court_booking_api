@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { CourtsService } from './courts.service';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CourtDTO } from './dto/create-court.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @ApiTags('Courts API')
 @Controller('courts')
@@ -10,11 +12,21 @@ export class CourtsController {
     constructor(private readonly courtsService: CourtsService) {}
 
     @Post()
+    @UseInterceptors(
+        FileInterceptor('court_time', {
+            storage: diskStorage({
+                destination: './uploads',
+                filename: (req, file, cb) => {
+                    cb(null, file.originalname);
+                },
+            }),
+        }),
+    )
     @ApiOperation({
         summary: 'Create one court',
     })
-    async createCourt(@Body() courtData: CourtDTO) {
-        return this.courtsService.createCourt(courtData);
+    async createCourt(@Body() courtData: CourtDTO, @UploadedFile() image: Express.Multer.File) {
+        return this.courtsService.createCourt(courtData, image);
     }
 
     @Get('FindMany')
