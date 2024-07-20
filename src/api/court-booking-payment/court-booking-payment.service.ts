@@ -3,6 +3,7 @@ import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingPaymentDto } from './dto/court-booking-payment.dto';
 import { CourtBookingPaymentHistory, PaymentStatus } from '@prisma/client';
 import { setVientianeTimezone } from 'src/utils/set-timezone';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class CourtBookingPaymentService {
@@ -62,6 +63,73 @@ export class CourtBookingPaymentService {
                 device_id: courtBookingPaymentData.device_id,
             },
         });
+
+        // Calculate the day of the week and total amount
+        const paymentDate = moment(createCourtBookingPayment.date, 'DD/MM/YYYY');
+        const dayOfWeek = paymentDate.format('dddd');
+        const totalAmount = +createCourtBookingPayment.court_available.all_total_amount;
+
+        // Find or create the weekly income report for the current week
+        const existingReport = await this.prisma.weeklyIncomeReport.findFirst({
+            where: {
+                created_at: {
+                    gte: moment().startOf('isoWeek').toDate(),
+                },
+            },
+        });
+
+        // Parse the days JSON field
+        let dailyIncomes: { day: string; income: number }[] = [];
+        if (existingReport?.days) {
+            try {
+                // Debugging: Log the existing days data type and value
+                console.log('Existing days data type:', typeof existingReport.days);
+                console.log('Existing days data:', existingReport.days);
+
+                // Handle cases where `days` might be an object or a string
+                if (typeof existingReport.days === 'string') {
+                    dailyIncomes = JSON.parse(existingReport.days) as { day: string; income: number }[];
+                } else {
+                    dailyIncomes = existingReport.days as unknown as { day: string; income: number }[];
+                }
+            } catch (error) {
+                // Debugging: Log the error
+                console.error('Error parsing JSON data:', error);
+                throw new Error('Error parsing JSON data for daily incomes');
+            }
+        }
+
+        // Update or add the income for the specific day
+        const dayIndex = dailyIncomes.findIndex((day) => day.day === dayOfWeek);
+
+        if (dayIndex !== -1) {
+            dailyIncomes[dayIndex].income += totalAmount;
+        } else {
+            dailyIncomes.push({ day: dayOfWeek, income: totalAmount });
+        }
+
+        const totalWeeklyIncome = dailyIncomes.reduce((sum, day) => sum + day.income, 0);
+
+        // Update or create the weekly income report
+        if (existingReport) {
+            await this.prisma.weeklyIncomeReport.update({
+                where: {
+                    id: existingReport.id,
+                },
+                data: {
+                    days: JSON.stringify(dailyIncomes),
+                    total_weekly_income: totalWeeklyIncome,
+                    updated_at: new Date(),
+                },
+            });
+        } else {
+            await this.prisma.weeklyIncomeReport.create({
+                data: {
+                    days: JSON.stringify(dailyIncomes),
+                    total_weekly_income: totalWeeklyIncome,
+                },
+            });
+        }
 
         return createCourtBookingPayment;
     }
