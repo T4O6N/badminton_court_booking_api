@@ -16,11 +16,11 @@ export class CourtDTO {
     description: string;
 
     @ApiProperty({
-        required: true,
+        required: false,
         description: 'court image',
         example: 'court image',
     })
-    court_image?: string;
+    court_image?: string; // Single string
 
     @ApiProperty({
         required: true,

@@ -13,7 +13,7 @@ export class CourtsController {
 
     @Post()
     @UseInterceptors(
-        FileInterceptor('court_time', {
+        FileInterceptor('court_image', {
             storage: diskStorage({
                 destination: './uploads',
                 filename: (req, file, cb) => {
@@ -34,7 +34,7 @@ export class CourtsController {
         summary: 'Find all courts',
     })
     async getCourts() {
-        return this.courtsService.getCourts();
+        return await this.courtsService.getCourts();
     }
 
     @Get('byId/:courtId')
