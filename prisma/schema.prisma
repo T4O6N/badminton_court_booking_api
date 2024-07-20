@@ -204,26 +204,9 @@ model CourtUsedReport {
   @@map("courtUsedReports")
 }
 
-// model WeeklyIncomeReport {
-//   id                  String    @id @default(auto()) @map("_id") @db.ObjectId
-//   day                 String
-//   income_amount       Int
-//   total_weekly_income Int       @default(0)
-//   created_at          DateTime? @default(now())
-//   updated_at          DateTime? @default(now())
-
-//   @@map("weeklyIncomeReports")
-// }
-
-model IncomeReport {
+model WeeklyIncomeReport {
   id                  String    @id @default(auto()) @map("_id") @db.ObjectId
-  monday              Int       @default(0)
-  tuesday             Int       @default(0)
-  wednesday           Int       @default(0)
-  thursday            Int       @default(0)
-  friday              Int       @default(0)
-  saturday            Int       @default(0)
-  sunday              Int       @default(0)
+  days                Json? // Store days as JSON
   total_weekly_income Int       @default(0)
   created_at          DateTime? @default(now())
   updated_at          DateTime? @default(now())
