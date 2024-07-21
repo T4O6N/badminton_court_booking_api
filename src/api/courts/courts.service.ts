@@ -3,14 +3,10 @@ import { UpdateCourtDto } from './dto/update-court.dto';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtDTO } from './dto/create-court.dto';
 import { Prisma } from '@prisma/client';
-import { FirebaseService } from 'src/utils/firebase/firebase.service';
 
 @Injectable()
 export class CourtsService {
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly firebaseService: FirebaseService,
-    ) {}
+    constructor(private readonly prisma: PrismaService) {}
 
     //NOTE - this is get all courts
     async getCourts() {
@@ -77,44 +73,5 @@ export class CourtsService {
         });
 
         return deletedCourt;
-    }
-
-    async uploadImage(file: Express.Multer.File) {
-        const storage = this.firebaseService.getStorageInstance();
-
-        const bucket = storage.bucket();
-
-        const fileName = `${Date.now()}-${file.originalname}`;
-
-        const fileUpload = bucket.file(`courts/${fileName}`);
-
-        const stream = fileUpload.createWriteStream({
-            metadata: {
-                contentType: file.mimetype,
-            },
-        });
-
-        await new Promise((resolve, reject) => {
-            stream.on('error', (err) => {
-                reject(err);
-            });
-
-            stream.on('finish', () => {
-                resolve(fileName);
-            });
-
-            stream.end(file.buffer);
-        });
-
-        const [url] = await fileUpload.getSignedUrl({
-            action: 'read',
-            expires: '12-31-9999',
-        });
-
-        return {
-            filename: file.originalname,
-            path: 'banners/',
-            url,
-        };
     }
 }

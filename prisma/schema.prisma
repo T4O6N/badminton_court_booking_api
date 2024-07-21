@@ -26,7 +26,7 @@ model Court {
   court_number String
   court_time   String? @db.ObjectId
   description  String?
-  court_image  String?
+  court_image  Json?
   available    Boolean @default(true)
 
   courtTime CourtTime? @relation(fields: [court_time], references: [id])
