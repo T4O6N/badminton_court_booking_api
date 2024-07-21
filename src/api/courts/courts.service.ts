@@ -35,11 +35,13 @@ export class CourtsService {
 
     //NOTE - this is create court
     async createCourt(courtData: CourtDTO, image: Express.Multer.File) {
+        console.log('upload image', image);
         const filename = image ? image.filename : null;
+        const imageUrl = filename ? `/data/user/0/com.example.nuol_badminton_thesis/cache/${filename}` : null;
         const createdCourt = await this.prisma.court.create({
             data: {
                 ...courtData,
-                court_image: filename,
+                court_image: imageUrl,
                 available: true,
             },
         });
