@@ -64,6 +64,12 @@ export class CourtBookingPaymentService {
             },
         });
 
+        try {
+            await this.weeklyIncomeReport();
+        } catch (error) {
+            console.log('Error updating weekly income report: ', error);
+        }
+
         return createCourtBookingPayment;
     }
 
