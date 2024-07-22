@@ -12,17 +12,11 @@ import { DashboardModule } from './api/dashboard/dashboard.module';
 import { UserOwnerModule } from './api/user-owner/user-owner.module';
 import { AdminModule } from './api/admin/admin.module';
 import { CourtSessionModule } from './api/court-session/court-session.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 
 @Module({
     imports: [
         ConfigModule.forRoot({
             isGlobal: true,
-        }),
-        ServeStaticModule.forRoot({
-            rootPath: join(__dirname, '..', 'public'),
-            serveRoot: '/uploads',
         }),
         PrismaModule,
         CourtsModule,
