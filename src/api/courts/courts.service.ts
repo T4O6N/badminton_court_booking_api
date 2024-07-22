@@ -2,13 +2,11 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtDTO } from './dto/create-court.dto';
-import { FirebaseService } from 'src/config/firebase/firebase.service';
 
 @Injectable()
 export class CourtsService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly firebaseService: FirebaseService,
     ) {}
 
     //NOTE - this is get all courts
