@@ -12,7 +12,6 @@ import { DashboardModule } from './api/dashboard/dashboard.module';
 import { UserOwnerModule } from './api/user-owner/user-owner.module';
 import { AdminModule } from './api/admin/admin.module';
 import { CourtSessionModule } from './api/court-session/court-session.module';
-// import { AuthModule } from './api/auth/auth.module';
 
 @Module({
     imports: [

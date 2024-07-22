@@ -5,7 +5,9 @@ import { CourtDTO } from './dto/create-court.dto';
 
 @Injectable()
 export class CourtsService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+    ) {}
 
     //NOTE - this is get all courts
     async getCourts() {
@@ -34,10 +36,11 @@ export class CourtsService {
     }
 
     //NOTE - this is create court
-    async createCourt(courtData: CourtDTO) {
+    async createCourt(courtData: CourtDTO, courtImageUrl: string | null) {
         const createdCourt = await this.prisma.court.create({
             data: {
                 ...courtData,
+                court_image: courtImageUrl,
                 available: true,
             },
         });

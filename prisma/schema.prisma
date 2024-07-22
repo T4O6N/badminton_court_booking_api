@@ -24,10 +24,10 @@ model Court {
   updated_at DateTime @default(now())
 
   court_number String
-  court_time   String?  @db.ObjectId
+  court_time   String? @db.ObjectId
   description  String?
-  court_image  String[]
-  available    Boolean  @default(true)
+  court_image  String?
+  available    Boolean @default(true)
 
   courtTime CourtTime? @relation(fields: [court_time], references: [id])
 
@@ -206,27 +206,10 @@ model CourtUsedReport {
 
 model WeeklyIncomeReport {
   id                  String    @id @default(auto()) @map("_id") @db.ObjectId
-  day                 String
-  income_amount       Int
+  days                Json? // Store days as JSON
   total_weekly_income Int       @default(0)
   created_at          DateTime? @default(now())
   updated_at          DateTime? @default(now())
 
   @@map("weeklyIncomeReports")
-}
-
-model IncomeReport {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  weekStart   DateTime
-  weekEnd     DateTime
-  monday      Float     @default(0)
-  tuesday     Float     @default(0)
-  wednesday   Float     @default(0)
-  thursday    Float     @default(0)
-  friday      Float     @default(0)
-  saturday    Float     @default(0)
-  sunday      Float     @default(0)
-  totalIncome Float     @default(0)
-  created_at  DateTime? @default(now())
-  updated_at  DateTime? @default(now())
 }
