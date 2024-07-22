@@ -2,11 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { UpdateCourtDto } from './dto/update-court.dto';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtDTO } from './dto/create-court.dto';
-import { Prisma } from '@prisma/client';
+import { FirebaseService } from 'src/config/firebase/firebase.service';
 
 @Injectable()
 export class CourtsService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly firebaseService: FirebaseService,
+    ) {}
 
     //NOTE - this is get all courts
     async getCourts() {
@@ -35,11 +38,11 @@ export class CourtsService {
     }
 
     //NOTE - this is create court
-    async createCourt(courtData: CourtDTO) {
+    async createCourt(courtData: CourtDTO, courtImageUrl: string | null) {
         const createdCourt = await this.prisma.court.create({
             data: {
                 ...courtData,
-                court_image: courtData.court_image as Prisma.JsonValue,
+                court_image: courtImageUrl,
                 available: true,
             },
         });
@@ -56,7 +59,6 @@ export class CourtsService {
             },
             data: {
                 ...courtData,
-                court_image: courtData.court_image as Prisma.JsonValue,
             },
         });
 

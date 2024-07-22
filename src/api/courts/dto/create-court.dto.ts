@@ -40,20 +40,8 @@ export class CourtDTO {
 
     @ApiProperty({
         required: false,
-        type: ImagePathDto,
         description: 'court image',
-        example: {
-            filename: 'profile.png',
-            path: 'uploads',
-            url: 'https://badminton-court-booking-api.onrender.com/uploads/profile.png',
-        },
+        example: 'court image',
     })
-    court_image?: ImagePathDto;
-
-    @ApiProperty({
-        required: true,
-        description: 'court available',
-        example: 'true',
-    })
-    available: boolean;
+    court_image?: string;
 }
