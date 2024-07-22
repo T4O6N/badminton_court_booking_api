@@ -34,29 +34,18 @@ export class FirebaseService {
     }
 
     async uploadImage(file: Express.Multer.File) {
-        // get an instance of the firebase storage
         const storage = this.getStorageInstance();
-
-        // get a reference to storage bucket in firebase project
         const bucket = storage.bucket();
-
-        // type of image
         const fileType = file.originalname.split('.').pop();
-
-        // when upload image a file name of image will be original name
         const fileName = `${Date.now()}-${fileType}`;
-
-        // upload to the path  of the file in a storage bucket where image will be uploaded
         const fileUpload = bucket.file(`court_image/${fileName}`);
 
-        // set metadata for the file such as it content type retrieved from file object
         const stream = fileUpload.createWriteStream({
             metadata: {
                 contentType: file.mimetype,
             },
         });
 
-        // rejects the promise if an error occurs when create a promise
         await new Promise((resolve, reject) => {
             stream.on('error', (err) => {
                 reject(err);
