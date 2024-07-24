@@ -82,7 +82,6 @@ export class CourtBookingsService {
     }
 
     async getCourtBookingById2(courtBookingId: string) {
-        // console.log(new Date().toISOString());
         const courtBooking = await this.prisma.courtBooking.findUnique({
             where: {
                 id: courtBookingId,
@@ -127,9 +126,10 @@ export class CourtBookingsService {
             courtBooking.courtSession.map(async (court) => {
                 let courtHasAvailableDurations = false;
 
+                const courtDate = moment(court.date);
                 const validDurations = court.duration_time.filter((duration) => {
-                    const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
-                    return currentTime.isBefore(end);
+                    const [end] = duration.split(' - ').map((time) => moment(`${court.date} ${time}`, 'YYYY-MM-DD h:mm A'));
+                    return courtDate.isSame(currentTime, 'day') ? currentTime.isBefore(end) : courtDate.isAfter(currentTime);
                 });
 
                 if (validDurations.length > 0) {
