@@ -48,7 +48,14 @@ export class CourtsController {
     @ApiOperation({
         summary: 'Update one court by id',
     })
-    async updateCourt(@Param('courtId') courtId: string, @Body() courtData: UpdateCourtDto) {
+    @UseInterceptors(FileInterceptor('court_image'))
+    async updateCourt(@Param('courtId') courtId: string, @Body() courtData: UpdateCourtDto, @UploadedFile() court_image: Express.Multer.File) {
+        let imageUrl: string | null = null;
+        if (court_image) {
+            const uploadResult = await this.firebaseService.uploadImage(court_image);
+            imageUrl = uploadResult.url;
+            courtData.court_image = imageUrl;
+        }
         return this.courtsService.updateCourt(courtId, courtData);
     }
 
