@@ -12,36 +12,49 @@ export class DashboardService {
     async CourtUsedReport() {
         const allCourtNumbers = ['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9', 'J10'];
 
-        const courtBookingCounts = await this.prisma.courtBooking.groupBy({
-            by: ['court_number'],
+        // Query to count the number of payments per court_booking_id
+        const paymentCounts = await this.prisma.courtBookingPayment.groupBy({
+            by: ['court_booking_id'],
             _count: {
                 id: true,
             },
         });
 
-        // Format the data as needed
+        // Fetch all bookings to get court_numbers
+        const courtBookingIds = paymentCounts.map((payment) => payment.court_booking_id);
+        const courtBookings = await this.prisma.courtBooking.findMany({
+            where: {
+                id: { in: courtBookingIds },
+            },
+        });
+
+        // Map court numbers to payment counts
         const dashboardData = allCourtNumbers.map((courtNumber) => {
-            const courtData = courtBookingCounts.find((item) => item.court_number === courtNumber);
+            // Find bookings for the current court number
+            const bookingsForCourt = courtBookings.filter((booking) => booking.court_number === courtNumber);
+
+            // Calculate the total payment count for this court number
+            const bookingCount = bookingsForCourt.reduce((sum, booking) => {
+                const paymentCount = paymentCounts.find((payment) => payment.court_booking_id === booking.id);
+                return sum + (paymentCount ? paymentCount._count.id : 0);
+            }, 0);
 
             return {
                 court_number: courtNumber,
-                booking_count: courtData ? courtData._count.id : 0,
+                booking_count: bookingCount,
             };
         });
 
+        // Update or create reports
         const reports = await Promise.all(
             dashboardData.map(async (data) => {
                 const existingReport = await this.prisma.courtUsedReport.findFirst({
-                    where: {
-                        court_used: data.court_number,
-                    },
+                    where: { court_used: data.court_number },
                 });
 
                 if (existingReport) {
                     const updatedReport = await this.prisma.courtUsedReport.update({
-                        where: {
-                            id: existingReport.id,
-                        },
+                        where: { id: existingReport.id },
                         data: {
                             booking_count: data.booking_count,
                             updated_at: new Date(),
