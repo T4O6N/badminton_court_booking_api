@@ -25,63 +25,6 @@ export class CourtBookingsService {
 
     // NOTE - this is get court booking by id
     async getCourtBookingById(courtBookingId: string) {
-        const courtBooking = await this.prisma.courtBooking.findUnique({
-            where: {
-                id: courtBookingId,
-            },
-            include: {
-                courtSession: {
-                    select: {
-                        id: true,
-                        court_booking_id: true,
-                        created_at: true,
-                        updated_at: true,
-                        date: true,
-                        duration_time: true,
-                        available: true,
-                    },
-                },
-            },
-        });
-
-        if (!courtBooking) {
-            throw new BadRequestException('Court booking not found');
-        }
-
-        const currentTime = moment();
-
-        // Update court availability based on duration time
-        await Promise.all(
-            courtBooking.courtSession.map(async (court) => {
-                for (const duration of court.duration_time) {
-                    const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
-
-                    if (currentTime.isAfter(end)) {
-                        // Update the court availability in the database
-                        await this.prisma.courtSession.update({
-                            where: { id: court.id },
-                            data: { available: false },
-                        });
-                        break;
-                    }
-                }
-            }),
-        );
-
-        courtBooking.courtSession.map((court) => {
-            court.duration_time.map((duration) => {
-                const [start, end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
-
-                if (currentTime.isAfter(end)) {
-                } else if (currentTime.isBetween(start, end)) {
-                    return `ເວລາທີ່ທ່ານຈອງ (${duration}) ໄດ້ກາຍເວລາທີ່ກໍານົດແລ້ວ!!`;
-                }
-                return `ເວລາທີ່ທ່ານຈອງ (${duration}) ແມ່ນຍັງສາມາດໃຊ້ງານໄດ້.`;
-            });
-        });
-    }
-
-    async getCourtBookingById2(courtBookingId: string) {
         // console.log(new Date().toISOString());
         const courtBooking = await this.prisma.courtBooking.findUnique({
             where: {
@@ -127,10 +70,25 @@ export class CourtBookingsService {
             courtBooking.courtSession.map(async (court) => {
                 let courtHasAvailableDurations = false;
 
+                const courtDate = moment(court.date, 'YYYY-MM-DD');
                 const validDurations = court.duration_time.filter((duration) => {
-                    const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
-                    return currentTime.isBefore(end);
+                    const [end] = duration.split(' - ').map((time) => moment(`${court.date} ${time}`, 'YYYY-MM-DD h:mm A'));
+                    console.log(`Checking duration: ${duration}`);
+                    console.log(`Parsed end time: ${end.format()}`);
+                    console.log(`Current time: ${currentTime.format()}`);
+
+                    if (courtDate.isSame(currentTime, 'day')) {
+                        const isBeforeEnd = currentTime.isBefore(end);
+                        console.log(`Is current time before end time? ${isBeforeEnd}`);
+                        return isBeforeEnd;
+                    } else {
+                        const isAfterCurrent = courtDate.isAfter(currentTime);
+                        console.log(`Is court date after current time? ${isAfterCurrent}`);
+                        return isAfterCurrent;
+                    }
                 });
+
+                console.log('Valid durations:', validDurations);
 
                 if (validDurations.length > 0) {
                     courtHasAvailableDurations = true;
