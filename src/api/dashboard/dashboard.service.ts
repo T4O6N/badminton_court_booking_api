@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 // import * as cron from 'node-cron';
 import * as moment from 'moment-timezone';
@@ -80,6 +80,121 @@ export class DashboardService {
 
     async weeklyIncomeReport() {
         try {
+            // Get income from CourtBookingPayment
+            const paymentIncome = await this.prisma.courtBookingPayment.findMany({
+                where: {
+                    payment_status: 'paided', // Ensure this matches your enum value
+                },
+                include: {
+                    court_booking: {
+                        select: {
+                            courtSession: {
+                                select: {
+                                    date: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+
+            console.log('Payment Income:', paymentIncome);
+
+            // Get total amount from CourtAvailable
+            const courtAvailables = await this.prisma.courtAvailable.findMany({
+                select: {
+                    court_booking_id: true,
+                    all_total_amount: true,
+                },
+            });
+
+            console.log('Court Availables:', courtAvailables);
+
+            // Prepare an object to store income for each day of the week
+            const dailyIncomes: { [key: string]: number } = {
+                Monday: 0,
+                Tuesday: 0,
+                Wednesday: 0,
+                Thursday: 0,
+                Friday: 0,
+                Saturday: 0,
+                Sunday: 0,
+            };
+
+            // Aggregate income by day of the week
+            paymentIncome.forEach((payment) => {
+                const court = Array.isArray(payment.court_booking?.courtSession)
+                    ? payment.court_booking?.courtSession[0]
+                    : payment.court_booking?.courtSession;
+
+                if (court?.date) {
+                    const date = moment(court.date, 'YYYY-MM-DD'); // Adjust date format as needed
+                    const dayOfWeek = date.format('dddd');
+                    const courtAvailable = courtAvailables.find((ca) => ca.court_booking_id === payment.court_booking_id);
+                    const totalAmount = courtAvailable ? +courtAvailable.all_total_amount : 0;
+
+                    if (dailyIncomes.hasOwnProperty(dayOfWeek)) {
+                        dailyIncomes[dayOfWeek] += totalAmount;
+                    }
+                }
+            });
+
+            console.log('Daily Incomes:', dailyIncomes);
+
+            const totalWeeklyIncome = Object.values(dailyIncomes).reduce((sum, income) => sum + income, 0);
+
+            // Convert daily incomes to JSON format
+            const daysArray = Object.entries(dailyIncomes).map(([day, income]) => ({
+                day,
+                income,
+            }));
+
+            console.log('Days Array:', daysArray);
+
+            // Check if a report already exists for the current week
+            const startOfWeek = moment().startOf('isoWeek').toDate();
+            const existingReport = await this.prisma.weeklyIncomeReport.findFirst({
+                where: {
+                    created_at: {
+                        gte: startOfWeek,
+                    },
+                },
+            });
+
+            console.log('Existing Report:', existingReport);
+
+            if (existingReport) {
+                await this.prisma.weeklyIncomeReport.update({
+                    where: { id: existingReport.id },
+                    data: {
+                        days: daysArray.length > 0 ? daysArray : [],
+                        total_weekly_income: totalWeeklyIncome,
+                        updated_at: new Date(),
+                    },
+                });
+                console.log('Updated Existing Report');
+            } else {
+                await this.prisma.weeklyIncomeReport.create({
+                    data: {
+                        days: daysArray.length > 0 ? daysArray : [],
+                        total_weekly_income: totalWeeklyIncome,
+                    },
+                });
+                console.log('Created New Report');
+            }
+
+            return { days: daysArray, totalWeeklyIncome };
+        } catch (error) {
+            console.error('Error in weeklyIncomeReport:', error);
+            throw new InternalServerErrorException('An error occurred while fetching the weekly income report.');
+        }
+    }
+
+    async dailyIncomeReport(): Promise<any> {
+        try {
+            // Get today's day of the week
+            const today = moment().format('dddd').toLowerCase();
+
             // Step 1: Get income from CourtBookingPayment
             const paymentIncome = await this.prisma.courtBookingPayment.findMany({
                 where: {
@@ -110,18 +225,10 @@ export class DashboardService {
 
             console.log('Court Availables:', courtAvailables);
 
-            // Step 3: Prepare an object to store income for each day of the week
-            const dailyIncomes: { [key: string]: number } = {
-                Monday: 0,
-                Tuesday: 0,
-                Wednesday: 0,
-                Thursday: 0,
-                Friday: 0,
-                Saturday: 0,
-                Sunday: 0,
-            };
+            // Step 3: Prepare a variable to store income for the specified day
+            let dailyIncome = 0;
 
-            // Step 4: Aggregate income by day of the week
+            // Step 4: Aggregate income by today
             paymentIncome.forEach((payment) => {
                 const court = Array.isArray(payment.court_booking?.courtSession)
                     ? payment.court_booking?.courtSession[0]
@@ -129,64 +236,25 @@ export class DashboardService {
 
                 if (court?.date) {
                     const date = moment(court.date, 'DD/MM/YYYY');
-                    const dayOfWeek = date.format('dddd');
-                    const courtAvailable = courtAvailables.find((ca) => ca.court_booking_id === payment.court_booking_id);
-                    const totalAmount = courtAvailable ? +courtAvailable.all_total_amount : 0;
+                    const dayOfWeek = date.format('dddd').toLowerCase();
 
-                    if (dailyIncomes.hasOwnProperty(dayOfWeek)) {
-                        dailyIncomes[dayOfWeek] += totalAmount;
+                    if (dayOfWeek === today) {
+                        const courtAvailable = courtAvailables.find((ca) => ca.court_booking_id === payment.court_booking_id);
+                        const totalAmount = courtAvailable ? +courtAvailable.all_total_amount : 0;
+                        dailyIncome += totalAmount;
                     }
                 }
             });
 
-            console.log('Daily Incomes:', dailyIncomes);
+            console.log('Daily Income for', today, ':', dailyIncome);
 
-            const totalWeeklyIncome = Object.values(dailyIncomes).reduce((sum, income) => sum + income, 0);
-
-            // Convert daily incomes to JSON format
-            const daysArray = Object.entries(dailyIncomes).map(([day, income]) => ({
-                day,
-                income,
-            }));
-
-            console.log('Days Array:', daysArray);
-
-            // Check if a report already exists for the current week
-            const existingReport = await this.prisma.weeklyIncomeReport.findFirst({
-                where: {
-                    created_at: {
-                        gte: moment().startOf('isoWeek').toDate(), // Adjust query as needed
-                    },
-                },
-            });
-
-            console.log('Existing Report:', existingReport);
-
-            if (existingReport) {
-                await this.prisma.weeklyIncomeReport.update({
-                    where: {
-                        id: existingReport.id,
-                    },
-                    data: {
-                        days: daysArray.length > 0 ? daysArray : [], // Ensure days is not null
-                        total_weekly_income: totalWeeklyIncome,
-                        updated_at: new Date(),
-                    },
-                });
-                console.log('Updated Existing Report');
-            } else {
-                await this.prisma.weeklyIncomeReport.create({
-                    data: {
-                        days: daysArray.length > 0 ? daysArray : [], // Ensure days is not null
-                        total_weekly_income: totalWeeklyIncome,
-                    },
-                });
-                console.log('Created New Report');
-            }
-
-            return { days: daysArray, totalWeeklyIncome };
+            // Return the daily income
+            return {
+                day: today,
+                daily_income: dailyIncome,
+            };
         } catch (error) {
-            console.error('Error in weeklyIncomeReport:', error);
+            console.error('Error in dailyIncomeReport:', error);
             throw error;
         }
     }

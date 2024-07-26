@@ -62,4 +62,12 @@ export class AdminService {
 
         return deletedAdmin;
     }
+
+    async getCourtBookingsForAdmin() {
+        return await this.prisma.courtBookingHistory.findMany({
+            include: {
+                court_booking: true,
+            },
+        });
+    }
 }

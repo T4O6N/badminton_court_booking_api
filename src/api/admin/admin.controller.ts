@@ -48,4 +48,9 @@ export class AdminController {
     async deleteAdmin(@Param('id') adminId: string) {
         return await this.adminService.deleteAdmin(adminId);
     }
+
+    @Get('court-booking-history')
+    async getCourtBookingsForAdmin() {
+        return await this.adminService.getCourtBookingsForAdmin();
+    }
 }

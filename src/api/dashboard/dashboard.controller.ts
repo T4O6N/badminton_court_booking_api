@@ -16,4 +16,9 @@ export class DashboardController {
     async getIncomeReport() {
         return await this.dashboardService.weeklyIncomeReport();
     }
+
+    @Get('daily-income-report')
+    async dailyIncomeReport() {
+        return await this.dashboardService.dailyIncomeReport();
+    }
 }
