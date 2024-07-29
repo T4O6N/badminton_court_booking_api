@@ -1,73 +1,86 @@
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { CourtBookingPaymentDto } from './dto/court-booking-payment.dto';
-import { CourtBookingPaymentHistory } from '@prisma/client';
 import * as moment from 'moment-timezone';
+import { setVientianeTimezone } from 'src/utils/set-timezone';
 
 @Injectable()
 export class CourtBookingPaymentService {
     constructor(private readonly prisma: PrismaService) {}
 
     async createCourtBookingPayment(courtBookingPaymentData: CourtBookingPaymentDto) {
-        try {
-            // Check if the court booking exists
-            const findCourtBooking = await this.prisma.courtBooking.findUnique({
-                where: { id: courtBookingPaymentData.court_booking_id },
-            });
+        const findCourtBooking = await this.prisma.courtBooking.findUnique({
+            where: {
+                id: courtBookingPaymentData.court_booking_id,
+            },
+        });
 
-            if (!findCourtBooking) {
-                throw new BadRequestException('Court booking ID not found.');
-            }
-
-            // Check if a payment already exists for this booking
-            const existingPayment = await this.prisma.courtBookingPayment.findFirst({
-                where: {
-                    court_booking_id: courtBookingPaymentData.court_booking_id,
-                    court_available_id: courtBookingPaymentData.court_available_id,
-                },
-            });
-
-            if (existingPayment) {
-                throw new BadRequestException('Court booking has already been paid.');
-            }
-
-            // Create the court booking payment
-            const date = new Date();
-            const createCourtBookingPayment = await this.prisma.courtBookingPayment.create({
-                data: {
-                    ...courtBookingPaymentData,
-                    payment_status: 'paided', // Ensure this matches your enum value
-                    date: date.toISOString(), // Save date in ISO format
-                    payment_time: date.toTimeString(), // Save time in a human-readable format
-                },
-                include: {
-                    court_available: true,
-                },
-            });
-
-            // Update the court booking status
-            await this.prisma.courtBooking.update({
-                where: { id: courtBookingPaymentData.court_booking_id },
-                data: { payment_status: 'paided' },
-            });
-
-            // Create the payment history
-            await this.prisma.courtBookingPaymentHistory.create({
-                data: {
-                    booking_payment_id: createCourtBookingPayment.id,
-                    court_available_id: courtBookingPaymentData.court_available_id,
-                    device_id: courtBookingPaymentData.device_id,
-                },
-            });
-
-            // Update weekly income report
-            await this.updateWeeklyIncomeReport();
-
-            return createCourtBookingPayment;
-        } catch (error) {
-            console.error('Error in createCourtBookingPayment:', error);
-            throw new InternalServerErrorException('An error occurred while creating court booking payment.');
+        if (!findCourtBooking) {
+            throw new BadRequestException('this court booking ID is not found');
         }
+
+        // Check if a payment already exists for this booking
+        const existingPayment = await this.prisma.courtBookingPayment.findFirst({
+            where: {
+                court_booking_id: courtBookingPaymentData.court_booking_id,
+                court_available_id: courtBookingPaymentData.court_available_id,
+            },
+        });
+
+        if (existingPayment) {
+            throw new BadRequestException('Court booking has already been paid.');
+        }
+
+        // Create the court booking payment
+        const date = new Date();
+        const createCourtBookingPayment = await this.prisma.courtBookingPayment.create({
+            data: {
+                ...courtBookingPaymentData,
+                payment_status: 'paided',
+                date: setVientianeTimezone(date).fullDate,
+                payment_time: setVientianeTimezone(date).time,
+            },
+            include: {
+                court_available: true,
+            },
+        });
+
+        // Update the court booking status
+        await this.prisma.courtBooking.update({
+            where: {
+                id: courtBookingPaymentData.court_booking_id,
+            },
+            data: {
+                payment_status: 'paided',
+            },
+        });
+
+        await this.prisma.courtBookingPaymentHistory.create({
+            data: {
+                booking_payment_id: createCourtBookingPayment.id,
+                court_available_id: courtBookingPaymentData.court_available_id,
+                device_id: courtBookingPaymentData.device_id,
+            },
+        });
+
+        // Update weekly income report
+        await this.updateWeeklyIncomeReport();
+
+        return createCourtBookingPayment;
+    }
+
+    async getOneAdmin(adminId: string) {
+        const findOneAdmin = await this.prisma.admin.findFirst({
+            where: {
+                id: adminId,
+            },
+        });
+
+        if (!findOneAdmin) {
+            throw new BadRequestException('this admin ID is not found');
+        }
+
+        return findOneAdmin;
     }
 
     async updateWeeklyIncomeReport() {
@@ -157,14 +170,6 @@ export class CourtBookingPaymentService {
         }
     }
 
-    async createCourtBookingPaymentHistory(paymentHistory: CourtBookingPaymentHistory) {
-        return await this.prisma.courtBookingPaymentHistory.create({
-            data: {
-                ...paymentHistory,
-            },
-        });
-    }
-
     async getCourtBookingPaymentHistory(device_id: string) {
         return await this.prisma.courtBookingPaymentHistory.findMany({
             orderBy: {
@@ -210,4 +215,30 @@ export class CourtBookingPaymentService {
             },
         });
     }
+
+    // async getCourtBookingPaymentHistoryForAdmin(adminId: string) {
+    //     return await this.prisma.courtBookingPaymentHistory.findMany({
+    //         where: {
+    //             admin_id: adminId,
+    //         },
+    //         orderBy: {
+    //             created_at: 'desc',
+    //         },
+    //         include: {
+    //             booking_payment: {
+    //                 select: {
+    //                     date: true,
+    //                     payment_time: true,
+    //                     court_booking: {
+    //                         select: {
+    //                             phone: true,
+    //                             full_name: true,
+    //                             court_number: true,
+    //                         },
+    //                     },
+    //                 },
+    //             },
+    //         },
+    //     });
+    // }
 }

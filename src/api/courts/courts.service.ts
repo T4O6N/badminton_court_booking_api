@@ -5,9 +5,7 @@ import { CourtDTO } from './dto/create-court.dto';
 
 @Injectable()
 export class CourtsService {
-    constructor(
-        private readonly prisma: PrismaService,
-    ) {}
+    constructor(private readonly prisma: PrismaService) {}
 
     //NOTE - this is get all courts
     async getCourts() {

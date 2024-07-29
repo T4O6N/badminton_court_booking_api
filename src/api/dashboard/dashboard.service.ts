@@ -10,7 +10,13 @@ export class DashboardService {
     }
 
     async CourtUsedReport() {
-        const allCourtNumbers = ['A1', 'B2', 'C3', 'D4', 'E5', 'F6', 'G7', 'H8', 'I9', 'J10'];
+        const allCourts = await this.prisma.court.findMany({
+            select: {
+                court_number: true,
+            },
+        });
+
+        const allCourtNumbers = allCourts.map((court) => court.court_number);
 
         // Query to count the number of payments per court_booking_id
         const paymentCounts = await this.prisma.courtBookingPayment.groupBy({

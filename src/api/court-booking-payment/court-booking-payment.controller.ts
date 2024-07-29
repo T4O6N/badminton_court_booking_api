@@ -22,4 +22,12 @@ export class CourtBookingPaymentController {
     async getOneCourtBookingPaymentHistory(@Param('id') paymentHistoryId: string) {
         return await this.courtBookingPaymentService.getOneCourtBookingPaymentHistory(paymentHistoryId);
     }
+
+    // @Get('payment-history/for-admin')
+    // async getPaymentHistory(@Query('adminId') adminId: string) {
+    //     if (!adminId) {
+    //         throw new Error('Admin ID is required');
+    //     }
+    //     return await this.courtBookingPaymentService.getCourtBookingPaymentHistoryForAdmin(adminId);
+    // }
 }

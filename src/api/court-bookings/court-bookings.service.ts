@@ -24,7 +24,7 @@ export class CourtBookingsService {
     }
 
     // NOTE - this is get court booking by id
-    async getCourtBookingById(courtBookingId: string) {
+    async getCourtBookingById(courtBookingId: string, incomingTotalAmount: number) {
         // console.log(new Date().toISOString());
         const courtBooking = await this.prisma.courtBooking.findUnique({
             where: {
@@ -59,33 +59,17 @@ export class CourtBookingsService {
             throw new BadRequestException('Court booking not found');
         }
 
-        // this.usedCourtBookingIds.add(courtBookingId);
-
         const currentTime = moment();
         const availableDurations: string[] = [];
-        const courtPrice = 80000;
 
         // Check and collect available duration times
         await Promise.all(
             courtBooking.courtSession.map(async (court) => {
                 let courtHasAvailableDurations = false;
 
-                const courtDate = moment(court.date, 'YYYY-MM-DD');
                 const validDurations = court.duration_time.filter((duration) => {
-                    const [end] = duration.split(' - ').map((time) => moment(`${court.date} ${time}`, 'YYYY-MM-DD h:mm A'));
-                    console.log(`Checking duration: ${duration}`);
-                    console.log(`Parsed end time: ${end.format()}`);
-                    console.log(`Current time: ${currentTime.format()}`);
-
-                    if (courtDate.isSame(currentTime, 'day')) {
-                        const isBeforeEnd = currentTime.isBefore(end);
-                        console.log(`Is current time before end time? ${isBeforeEnd}`);
-                        return isBeforeEnd;
-                    } else {
-                        const isAfterCurrent = courtDate.isAfter(currentTime);
-                        console.log(`Is court date after current time? ${isAfterCurrent}`);
-                        return isAfterCurrent;
-                    }
+                    const [end] = duration.split(' - ').map((time) => moment(time, 'h:mm A'));
+                    return currentTime.isBefore(end);
                 });
 
                 console.log('Valid durations:', validDurations);
@@ -104,11 +88,13 @@ export class CourtBookingsService {
         );
 
         const totalAvailableCount = availableDurations.length;
-        const totalAmount = totalAvailableCount * courtPrice;
+
+        const totalAmount = incomingTotalAmount;
 
         // Log for debugging
         console.log('available durations:', availableDurations);
         console.log('total available count:', totalAvailableCount);
+        console.log('total available count:', incomingTotalAmount);
 
         // Find existing CourtAvailable entry for the court booking
         const existingCourtAvailable = await this.prisma.courtAvailable.findFirst({
@@ -176,7 +162,7 @@ export class CourtBookingsService {
             data: {
                 ...courtBookingData,
                 booked_by: courtBookingData.full_name,
-                // total_amount: totalAmount,
+                // total_amount: 0,
                 courtSession: {
                     create: courtBookingData.courtSession.map((court) => ({
                         ...court,

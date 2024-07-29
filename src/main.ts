@@ -2,7 +2,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { setupSwagger } from './config/swagger/swagger.config';
 import { ResponseInterceptor } from './config/interceptors/response.interceptor';
+import * as moment from 'moment-timezone';
 
+moment.tz.setDefault('Asia/Vientiane');
 async function main() {
     const nestApp = await NestFactory.create(AppModule);
     nestApp.enableCors();

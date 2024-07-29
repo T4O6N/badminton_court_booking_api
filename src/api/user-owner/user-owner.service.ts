@@ -66,4 +66,17 @@ export class UserOwnerService {
 
         return deletedUserOwner;
     }
+
+    // async getActiveAdmins(admin_id: string) {
+    //     const admin = await this.prisma.admin.findUnique({
+    //         where: {
+    //             id: admin_id,
+    //         },
+    //         include: {
+    //             courtBookingPaymentHistories: true,
+    //         },
+    //     });
+
+    //     return admin;
+    // }
 }

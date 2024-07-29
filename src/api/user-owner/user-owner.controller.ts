@@ -49,4 +49,10 @@ export class UserOwnerController {
     async deleteUserOwner(@Param('id') userOwnerId: string): Promise<UserOwner> {
         return this.userOwnerService.deleteUserOwner(userOwnerId);
     }
+
+    //NOTE - this is get all active admins
+    // @Get('get-active-admin/:id')
+    // async getActiveAdmins(@Param('id') admin_id: string) {
+    //     return this.userOwnerService.getActiveAdmins(admin_id);
+    // }
 }

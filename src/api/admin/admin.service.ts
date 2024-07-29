@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/config/prisma/prisma.service';
 import { AdminDTO } from './dto/create-admin.dto';
 import { UpdateAdminDTO } from './dto/update-admin.dto';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class AdminService {
@@ -34,6 +35,10 @@ export class AdminService {
             },
         });
 
+        if (!findOneAdmin) {
+            throw new BadRequestException('this admin ID is not found');
+        }
+
         return findOneAdmin;
     }
 
@@ -63,7 +68,43 @@ export class AdminService {
         return deletedAdmin;
     }
 
-    async getCourtBookingsForAdmin() {
+    async getCourtBookingsDailyForAdmin() {
+        const today = moment().startOf('day'); // Get the start of the current day
+
+        console.log(today.format('DD/MM/YYYY'));
+
+        const courtBookingHistories = await this.prisma.courtBookingHistory.findMany({
+            where: {
+                court_booking: {
+                    courtSession: {
+                        some: {
+                            date: today.format('DD/MM/YYYY'), // Filter by today's date
+                        },
+                    },
+                },
+            },
+            include: {
+                court_booking: {
+                    select: {
+                        id: true,
+                        device_id: true,
+                        phone: true,
+                        full_name: true,
+                        court_number: true,
+                        payment_status: true,
+                        total_amount: true,
+                        booked_by: true,
+                        created_at: true,
+                        updated_at: true,
+                    },
+                },
+            },
+        });
+
+        return courtBookingHistories;
+    }
+
+    async getAllCourtBookingHistoriesForAdmin() {
         return await this.prisma.courtBookingHistory.findMany({
             include: {
                 court_booking: true,

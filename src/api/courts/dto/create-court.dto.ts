@@ -44,4 +44,18 @@ export class CourtDTO {
         example: 'court image',
     })
     court_image?: string;
+
+    @ApiProperty({
+        required: true,
+        description: 'court price',
+        example: '80000',
+    })
+    court_price: string;
+
+    @ApiProperty({
+        required: false,
+        description: 'promotion',
+        example: 'hot promotion',
+    })
+    promotion?: string;
 }
